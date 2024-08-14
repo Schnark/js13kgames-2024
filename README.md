@@ -1,2 +1,1 @@
-# js13kgames-2024
-Submission for the Js13kGames competition 2024
+Nothing to show yet, but I plan a Rogue-like. Ranged attacks might be throwing a horseshoe (they do return like boomerangs, I'm sure).
