@@ -4,11 +4,10 @@ Player =
 (function () {
 "use strict";
 
-function Player (x, y, level) {
+function Player (dungeon) {
 	this.type = '@';
-	this.x = x;
-	this.y = y;
-	this.level = level;
+	this.dungeon = dungeon;
+	dungeon.init(this);
 
 	//should be odd to avoid most of the rounding problems
 	this.sightRadius = 3;
@@ -16,6 +15,12 @@ function Player (x, y, level) {
 	//luck for player
 	this.health = 77;
 	this.maxHealth = 77;
+	this.experience = 1;
+	this.block = 0.1;
+	this.minAttack = 1;
+	this.maxAttack = 3;
+
+	this.luckyCharms = 0;
 }
 
 Player.prototype = new MonsterBase();
@@ -61,6 +66,20 @@ Player.prototype.canSee = function (x, y) {
 		}
 	}
 	return true;
+};
+
+Player.prototype.goUp = function () {
+	if (this.level.getType(this.x, this.y) === '<') {
+		this.dungeon.goUp(this);
+		return true;
+	}
+};
+
+Player.prototype.goDown = function () {
+	if (this.level.getType(this.x, this.y) === '>') {
+		this.dungeon.goDown(this);
+		return true;
+	}
 };
 
 return Player;

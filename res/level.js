@@ -84,6 +84,14 @@ Level.prototype.hasBeenSeen = function (x, y) {
 	return this.tiles[y][x].isSeen();
 };
 
+Level.prototype.getType = function (x, y) {
+	return this.tiles[y][x].getType();
+};
+
+Level.prototype.takeItem = function (x, y) {
+	return this.tiles[y][x].takeItem();
+};
+
 Level.prototype.monsterAt = function (x, y) {
 	var i, monster;
 	for (i = 0; i < this.npc.length; i++) {

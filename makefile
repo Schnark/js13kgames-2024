@@ -1,5 +1,5 @@
-JS = res/log.js res/generate-level.js res/canvas.js res/tile.js res/level.js res/monster-base.js res/monster.js res/player.js res/events.js res/game.js
-GLOBAL = log, generateLevel, Canvas, Tile, Level, MonsterBase, Monster, Player, events
+JS = res/log.js res/generate-level.js res/canvas.js res/tile.js res/level.js res/dungeon.js res/monster-base.js res/monster.js res/player.js res/events.js res/game.js
+GLOBAL = log, generateLevel, Canvas, Tile, Level, Dungeon, MonsterBase, Monster, Player, events
 
 .PHONY: check
 check: min/game.zip

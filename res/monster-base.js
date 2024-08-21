@@ -39,8 +39,30 @@ MonsterBase.prototype.draw = function (canvas) {
 };
 
 MonsterBase.prototype.moveTo = function (x, y) {
+	var type, msg;
 	this.x = x;
 	this.y = y;
+	if (this.type === '@') {
+		type = this.level.getType(x, y);
+		if (type === '%') {
+			msg = 'you found a four-leave clover, ';
+			if (this.health === this.maxHealth) {
+				msg += 'but you leave it here for later.';
+			} else {
+				this.level.takeItem(x, y);
+				this.health += 7;
+				if (this.health > this.maxHealth) {
+					this.health = this.maxHealth;
+				}
+				msg += 'which' + (this.health === this.maxHealth ? '' : ' partially') + ' restores your luck.';
+			}
+			log(msg);
+		} else if (type === '*') {
+			this.luckyCharms++;
+			this.level.takeItem(x, y);
+			log('you found a lucky charm.');
+		}
+	}
 };
 
 MonsterBase.prototype.moveRel = function (dx, dy) {
@@ -57,13 +79,51 @@ MonsterBase.prototype.moveRel = function (dx, dy) {
 	return false;
 };
 
+MonsterBase.prototype.rangedFails = function (d) {
+	return Math.random() < (Math.pow(1.5, d / 2) - 1) / this.experience;
+};
+
+MonsterBase.prototype.blockAttack = function () {
+	return Math.random() < this.block * this.experience;
+};
+
+MonsterBase.prototype.getAttackDamage = function () {
+	return Math.round((this.minAttack + Math.random() * (this.maxAttack - this.minAttack)) * this.experience);
+};
+
+//only used for player
+MonsterBase.prototype.improveExperience = function (maxTargetHealth) {
+	var newExperience = this.experience * Math.pow(2, maxTargetHealth / 500);
+	if (Math.floor(newExperience * 10) !== Math.floor(this.experience * 10)) {
+		log('you feel more experienced now.');
+	}
+	this.experience = newExperience;
+};
+
 MonsterBase.prototype.attack = function (target, ranged) {
+
+	function dist (a, b) {
+		var x = a.x - b.x, y = a.y - b.y;
+		return Math.sqrt(x * x + y * y);
+	}
+
 	if (target.health === 0) {
 		return;
 	}
-	//TODO
-	if (ranged) {
-		log('you try to hit ' + target.getDesc(true) + ', but you miss.');
+	if (ranged && this.rangedFails(dist(target, this))) {
+		if (this.type === '@') {
+			log('you try to hit ' + target.getDesc(true) + ', but miss.');
+		} else {
+			log(this.getDesc(true) + ' tries to hit you, but misses.');
+		}
+		return;
+	}
+	if (target.blockAttack()) {
+		if (this.type === '@') {
+			log('you try to hit ' + target.getDesc(true) + ', but your attack is blocked.');
+		} else {
+			log(this.getDesc(true) + ' tries to hit you, but you block the attack.');
+		}
 		return;
 	}
 	if (this.type === '@') {
@@ -71,10 +131,13 @@ MonsterBase.prototype.attack = function (target, ranged) {
 	} else {
 		log(this.getDesc(true) + ' hits you.');
 	}
-	target.health -= 1;
+	target.health -= this.getAttackDamage();
 	if (target.health <= 0) {
 		target.health = 0;
 		target.die();
+		if (this.type === '@') {
+			this.improveExperience(target.maxHealth);
+		}
 	}
 };
 

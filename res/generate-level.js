@@ -83,7 +83,11 @@ function roomsToMap (rooms, corridors, x0, y0) {
 	for (i = 0; i < rooms.length; i++) {
 		add(rooms[i], '.');
 	}
-	level[y0 + 1][x0 + 1] = '*';
+	level[y0 + 1][x0 + 1] = '<';
+	i = rooms.length === 1 ? 0 : rand(1, rooms.length - 1);
+	x = rand(0, rooms[i].w - 1) + rooms[i].x;
+	y = rand(0, rooms[i].h - 1) + rooms[i].y;
+	level[y + 1][x + 1] = '>';
 	return level.map(function (row) {
 		return row.join('');
 	}).join('\n');

@@ -7,6 +7,14 @@ events =
 var queue = [], queueTimeout, DELAY = 200, player, gameOver = false,
 	canvas = new Canvas('canvas');
 
+function getPrintableKey (code, shift) {
+	var c = String.fromCharCode(code).toLowerCase();
+	if (shift) {
+		c = {'<': '>'}[c] || c.toUpperCase();
+	}
+	return c;
+}
+
 function getKey (e) {
 	if (e.key && e.key !== 'Unidentified') {
 		return {
@@ -26,7 +34,7 @@ function getKey (e) {
 		38: 'ArrowUp',
 		39: 'ArrowRight',
 		40: 'ArrowDown'
-	}[e.which] || String.fromCharCode(e.which).toLowerCase();
+	}[e.which] || getPrintableKey(e.which, e.shiftKey);
 }
 
 function addMove (dx, dy, repeat) {
@@ -66,6 +74,10 @@ function addWait (repeat) {
 }
 
 function onKey (e) {
+	if (e.ctrlKey || e.altKey) {
+		return;
+	}
+	queue = []; //abort any ongoing action
 	switch (getKey(e)) {
 	case '1':
 	case 'End':
@@ -105,8 +117,14 @@ function onKey (e) {
 	case 'PageUp':
 		addMove(1, -1, e.shiftKey);
 		break;
+	case '<':
+		queue.push(['goUp']);
+		break;
+	case '>':
+		queue.push(['goDown']);
+		break;
 	case 'c':
-		queue = [];
+		//queue = [];
 		break;
 	case 'f':
 		queue.push(['attack']);
@@ -115,18 +133,22 @@ function onKey (e) {
 		queue.push(['autoexplore']);
 		break;
 	}
-	if (!e.ctrlKey && !e.altKey) {
-		e.preventDefault();
-	}
+	e.preventDefault();
 	workQueue();
 }
 
 function onMouse (e) {
-	var pos, x, y, monster, path;
+	var pos, x, y, monster, type, path;
+
+	if (gameOver) {
+		return;
+	}
 
 	pos = canvas.getTile(e.clientX, e.clientY);
 	x = pos[0];
 	y = pos[1];
+
+	queue = [];
 
 	if (!player.level.hasBeenSeen(x, y)) {
 		log('you don’t know how to go there.');
@@ -136,14 +158,25 @@ function onMouse (e) {
 		if (Math.abs(x - player.x) <= 1 && Math.abs(y - player.y) <= 1) {
 			queue.push(['move', x - player.x, y - player.y]);
 		} else {
-			queue.push(['attack']); //TODO pick the selected one
+			queue.push(['attack', x, y]);
+		}
+	} else if (player.x === x && player.y === y) {
+		type = player.level.getType(x, y);
+		if (type !== '<' && type !== '>') {
+			queue.push(['wait']);
 		}
 	} else {
+		type = player.level.getType(x, y);
 		path = player.level.findPath(player.x, player.y, x, y, true);
 	}
 
 	if (path) {
 		addMoves(path);
+	}
+	if (type === '>') {
+		queue.push(['goDown']);
+	} else if (type === '<') {
+		queue.push(['goUp']);
 	}
 	workQueue();
 }
@@ -170,8 +203,25 @@ function workQueue () {
 		case 'move':
 			didSomething = player.moveRel(action[1], action[2]);
 			break;
+		case 'goUp':
+			didSomething = player.goUp();
+			break;
+		case 'goDown':
+			didSomething = player.goDown();
+			break;
 		case 'attack':
-			monster = player.level.visibleMonsters[0]; //TODO allow picking a monster if there is more than one
+			if (action[1]) { //since the x coordinate can't be 0 this will work
+				for (i = 0; i < player.level.visibleMonsters.length; i++) {
+					monster = player.level.visibleMonsters[i];
+					if (monster.x === action[1] && monster.y === action[2]) {
+						break;
+					} else {
+						monster = null;
+					}
+				}
+			} else {
+				monster = player.level.visibleMonsters[0]; //TODO allow picking a monster if there is more than one
+			}
 			if (monster) {
 				player.attack(monster, true);
 				didSomething = true;
@@ -187,7 +237,7 @@ function workQueue () {
 		case 'autoexplore':
 			path = player.level.autoexplore(player);
 			if (!path) {
-				log('level completely explored');
+				log('level completely explored.');
 			} else {
 				addMoves(path);
 				queue.push(['autoexplore']);
@@ -222,6 +272,10 @@ function workQueue () {
 	}
 	if (player.health === 0) {
 		queue = [];
+		gameOver = true;
+	}
+	if (player.luckyCharms === 3) {
+		log('you found all lucky charms and win the game.');
 		gameOver = true;
 	}
 	if (queue.length > 0) {

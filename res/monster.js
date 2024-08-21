@@ -16,6 +16,10 @@ function Monster (type, x, y, level) {
 
 	this.health = 10;
 	this.maxHealth = 10;
+	this.experience = 1;
+	this.block = 0.1;
+	this.minAttack = 1;
+	this.maxAttack = 2;
 }
 
 Monster.prototype = new MonsterBase();
