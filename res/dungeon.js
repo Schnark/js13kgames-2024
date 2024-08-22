@@ -30,21 +30,27 @@ Dungeon.prototype.createLevel = function (x0, y0, depth) {
 		}
 	}
 
-	addRandom('%');
-	addRandom('%');
-	addRandom('%');
 	addRandom('*');
+	addRandom('%');
+	addRandom('%');
+	addRandom('%');
+	addRandom('F');
+	addRandom('F');
+	if (depth === 1) {
+		addRandom('(');
+	}
 	map = map.replace(/\./g, ' ');
 	if (depth === 0) {
 		map = map.replace('<', ' ');
 	} else if (depth === 2) {
 		map = map.replace('>', ' ');
 	}
-	return new Level(map);
+	return new Level(map, depth);
 };
 
 Dungeon.prototype.goUp = function (player) {
 	log('you climb up the ladder.');
+	this.levels[this.currentLevel].leave();
 	this.currentLevel--;
 	player.level = this.levels[this.currentLevel];
 };
@@ -52,6 +58,7 @@ Dungeon.prototype.goUp = function (player) {
 Dungeon.prototype.goDown = function (player) {
 	var level;
 	log('you climb down the ladder.');
+	this.levels[this.currentLevel].leave();
 	this.currentLevel++;
 	if (!this.levels[this.currentLevel]) {
 		level = this.createLevel(player.x, player.y, this.currentLevel);

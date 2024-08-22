@@ -49,6 +49,14 @@ Tile.draw = {
 		ctx.fillStyle = '#8f8';
 		ctx.fillRect(0, 0, 16, 16);
 	},
+	'F': function (ctx) {
+		ctx.fillStyle = '#f88';
+		ctx.fillRect(0, 0, 16, 16);
+	},
+	'(': function (ctx) {
+		ctx.fillStyle = '#f80';
+		ctx.fillRect(0, 0, 16, 16);
+	},
 	'*': function (ctx) {
 		ctx.fillStyle = '#ff0';
 		ctx.fillRect(0, 0, 16, 16);

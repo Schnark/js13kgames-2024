@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<title>Untitled game</title>
+<title>The Lairs of Bad Luck</title>
 <meta name="viewport" content="width=device-width">
 <!--delete from here-->
 <link rel="stylesheet" href="res/game.css">
@@ -23,10 +23,11 @@ insert min.css
 </style>
 delete line-->
 </head><body>
-<canvas id="canvas" moz-opaque></canvas>
 <ol id="log" reversed></ol>
+<canvas id="canvas" moz-opaque></canvas>
 <p>Luck: <span id="luck"></span><br>
 <canvas id="luck-canvas" moz-opaque></canvas></p>
+<p id="inv"></p>
 <section>
 <h2>Help</h2>
 <p>Use number pad to move (or arrow keys but without diagonal movement), hold shift to walk to next wall. Or click on a place to go to (if you have seen it before).</p>
@@ -34,6 +35,7 @@ delete line-->
 <p>Press x to automatically explore the map.</p>
 <p>Press w to wait a turn, or W to wait until you see an enemy.</p>
 <p>To attack an enemy, press f for a ranged attack, or walk into it for a melee attack. Or just click on it.</p>
+<p>Press e to eat a mushroom, or click it in your inventory.</p>
 </section>
 <!--delete line
 <script>

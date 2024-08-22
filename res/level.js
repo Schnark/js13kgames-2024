@@ -4,13 +4,14 @@ Level =
 (function () {
 "use strict";
 
-function Level (data) {
+function Level (data, depth) {
 	this.tiles = data.split('\n').map(function (line) {
 		return line.split('').map(function (c) {
 			return new Tile(c);
 		});
 	});
 	this.npc = [];
+	this.depth = depth;
 }
 
 Level.prototype.draw = function (canvas, player) {
@@ -102,6 +103,17 @@ Level.prototype.monsterAt = function (x, y) {
 	}
 };
 
+Level.prototype.findFirst = function (type) {
+	var x, y;
+	for (x = 0; x < this.tiles[0].length; x++) {
+		for (y = 0; y < this.tiles.length; y++) {
+			if (this.tiles[y][x].getType() === type) {
+				return [x, y];
+			}
+		}
+	}
+};
+
 Level.prototype.findFreeTile = function (player) {
 	var i, x, y;
 	for (i = 0; i < 10000; i++) {
@@ -122,6 +134,20 @@ Level.prototype.spawnMonster = function (player, init) {
 	if (!init && Math.random() > 0.05) {
 		return;
 	}
+
+	if (init && this.depth === 2) {
+		pos = this.findFirst('<');
+		if (this.isOpen(pos[0] - 1, pos[1])) {
+			pos[0]--;
+		} else {
+			pos[0]++;
+		}
+		monster = new Monster('A', pos[0], pos[1], this);
+		monster.aiMode = 'hint';
+		monster.block = 1;
+		this.npc.push(monster);
+	}
+
 	pos = this.findFreeTile(player);
 	if (!pos) {
 		return;
@@ -134,6 +160,13 @@ Level.prototype.removeMonster = function (monster) {
 	var i = this.npc.indexOf(monster);
 	//assume i !== -1
 	this.npc.splice(i, 1);
+};
+
+Level.prototype.leave = function () {
+	var i;
+	for (i = 0; i < this.npc.length; i++) {
+		this.npc[i].seen = false;
+	}
 };
 
 function dist (x0, y0, x1, y1) {

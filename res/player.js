@@ -1,11 +1,12 @@
 /*global Player: true*/
-/*global MonsterBase*/
+/*global MonsterBase, log*/
 Player =
 (function () {
 "use strict";
 
 function Player (dungeon) {
 	this.type = '@';
+	this.isPlayer = true;
 	this.dungeon = dungeon;
 	dungeon.init(this);
 
@@ -21,6 +22,8 @@ function Player (dungeon) {
 	this.maxAttack = 3;
 
 	this.luckyCharms = 0;
+	this.luckyMushrooms = 0;
+	this.luckyMushroomTimeout = 0;
 }
 
 Player.prototype = new MonsterBase();
@@ -34,6 +37,28 @@ Player.prototype.showLuck = function () {
 	}
 	this.luckOutput.style.color = this.drawHealth(this.luckCanvas, 100, 10);
 	this.luckOutput.textContent = this.health + '/' + this.maxHealth;
+};
+
+Player.prototype.showInv = function () {
+	var inv;
+	inv = [
+		this.luckyCharms ? (this.luckyCharms + ' lucky charm(s)') : '',
+		this.luckyMushrooms ? ('<span class="mushroom">' + this.luckyMushrooms + ' lucky mushroom(s)</span>') : '',
+		this.sightRadius === 5 ? 'a lamp' : ''
+	].filter(function (entry) {
+		return entry;
+	}).join(', ');
+	document.getElementById('inv').innerHTML = inv ? ('You have: ' + inv) : '';
+};
+
+Player.prototype.getHint = function () {
+	//TODO this is wrong because it also counts a charm found on the third level
+	//but as for now it only is a placeholder I don't really care
+	return [
+		'You should go back, there are two lucky charms above.',
+		'You should go back, there is one lucky charm above.',
+		'Well done so far! Now find the third lucky charm.'
+	][this.luckyCharms];
 };
 
 //TODO improve
@@ -66,6 +91,65 @@ Player.prototype.canSee = function (x, y) {
 		}
 	}
 	return true;
+};
+
+Player.prototype.handleItem = function (type) {
+	var msg, take = false;
+	if (type === '%') {
+		msg = 'you found a four-leave clover, ';
+		if (this.health === this.maxHealth) {
+			msg += 'but you leave it here for later.';
+		} else {
+			take = true;
+			this.health += 7;
+			if (this.health > this.maxHealth) {
+				this.health = this.maxHealth;
+			}
+			msg += 'which' + (this.health === this.maxHealth ? '' : ' partially') + ' restores your luck.';
+		}
+		log(msg);
+	} else if (type === '*') {
+		this.luckyCharms++;
+		take = true;
+		log('you found a lucky charm.');
+	} else if (type === 'F') {
+		this.luckyMushrooms++;
+		take = true;
+		log('you found a lucky mushroom' + (this.luckyMushrooms === 1 ? ', which you can eat to make you very strong for a short time' : '') + '.');
+	} else if (type === '(') {
+		take = true;
+		this.sightRadius = 5;
+		log('you found a lamp.');
+	}
+	if (take) {
+		this.showInv();
+	}
+	return take;
+};
+
+Player.prototype.eat = function () {
+	if (this.luckyMushrooms === 0) {
+		return false;
+	}
+	this.luckyMushrooms--;
+	this.showInv();
+	if (this.luckyMushroomTimeout === 0) {
+		this.experience *= 2;
+		log('you feel very strong!');
+	}
+	this.luckyMushroomTimeout += Math.floor(4 + Math.random() * 5); //will be decreased immediately
+	return true;
+};
+
+Player.prototype.handleMushroomTimeout = function () {
+	if (this.luckyMushroomTimeout === 0) {
+		return;
+	}
+	this.luckyMushroomTimeout--;
+	if (this.luckyMushroomTimeout === 0) {
+		this.experience /= 2;
+		log('you feel normal again.');
+	}
 };
 
 Player.prototype.goUp = function () {

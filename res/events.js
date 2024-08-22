@@ -126,6 +126,9 @@ function onKey (e) {
 	case 'c':
 		//queue = [];
 		break;
+	case 'e':
+		queue.push(['eat']);
+		break;
 	case 'f':
 		queue.push(['attack']);
 		break;
@@ -181,11 +184,20 @@ function onMouse (e) {
 	workQueue();
 }
 
+function onMouseInv (e) {
+	if (e.target.className === 'mushroom') {
+		queue.push(['eat']);
+		workQueue();
+	}
+}
+
 function init (p) {
 	player = p;
 	document.addEventListener('keydown', onKey);
 	canvas.canvas.addEventListener('click', onMouse);
+	document.getElementById('inv').addEventListener('click', onMouseInv);
 	player.level.draw(canvas, player);
+	log('welcome. Find all three lucky charms to win.');
 }
 
 function workQueue () {
@@ -208,6 +220,9 @@ function workQueue () {
 			break;
 		case 'goDown':
 			didSomething = player.goDown();
+			break;
+		case 'eat':
+			didSomething = player.eat();
 			break;
 		case 'attack':
 			if (action[1]) { //since the x coordinate can't be 0 this will work
@@ -262,6 +277,7 @@ function workQueue () {
 			}
 		}
 	}
+	player.handleMushroomTimeout();
 
 	log.async(false);
 	monsterSeen = player.level.draw(canvas, player);
