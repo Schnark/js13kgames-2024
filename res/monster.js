@@ -4,57 +4,116 @@ Monster =
 (function () {
 "use strict";
 
-function Monster (type, x, y, level) {
+function Monster (type) {
 	this.type = type;
-	this.x = x;
-	this.y = y;
-	this.level = level;
 
 	//updated on level draw
 	this.seen = false;
 	this.seenBefore = false;
 
-	this.health = 10;
-	this.maxHealth = 10;
-	this.experience = 1;
-	this.block = 0.1;
-	this.minAttack = 1;
-	this.maxAttack = 2;
+	this.init(Monster.data[type]);
 }
 
 Monster.prototype = new MonsterBase();
 
-Monster.desc = {
-	'x': ['a green monster', 'the green monster'],
-	'A': ['a chimney sweep', 'the chimney sweep']
+//TODO balance values (also elsewhere)
+Monster.data = {
+	//TODO remove (debug only)
+	'x': {
+		desc: ['a green monster', 'the green monster'],
+		attackName: ['tries to bite', 'bites'],
+		speed: 0.75
+	},
+	//newts (slow, melee only)
+	':1': {
+		desc: ['a small newt', 'the small newt'],
+		attackName: ['tries to touch', 'touches'],
+		speed: 0.5,
+		maxAttack: 1,
+		health: 5
+	},
+	':2': {
+		desc: ['a newt', 'the newt'],
+		attackName: ['tries to touch', 'touches'],
+		speed: 0.75
+	},
+	':3': {
+		desc: ['a large newt', 'the large newt'],
+		attackName: ['tries to touch', 'touches']
+	},
+	//crows (fast, melee only, blinding attack)
+	'B1': {
+		desc: ['a small crow', 'the small crow'],
+		attackName: ['tries to peck', 'pecks'],
+		maxAttack: 1,
+		health: 5
+	},
+	'B2': {
+		desc: ['a crow', 'the crow'],
+		attackName: ['tries to peck', 'pecks'],
+		speed: 1.25,
+		maxAttack: 1,
+		health: 5
+	},
+	'B3': {
+		desc: ['a large crow', 'the large crow'],
+		attackName: ['tries to peck', 'pecks'],
+		speed: 1.5,
+		health: 5
+	},
+	//black cats (normal speed, ranged only)
+	'f1': {
+		desc: ['a small black cat', 'the small black cat'],
+		attackName: ['tries to hiss at', 'hisses at'],
+		maxAttack: 1,
+		aiMode: 'ranged'
+	},
+	'f2': {
+		desc: ['a black cat', 'the black cat'],
+		attackName: ['tries to hiss at', 'hisses at'],
+		maxAttack: 1,
+		aiMode: 'ranged'
+	},
+	'f3': {
+		desc: ['a large black cat', 'the large black cat'],
+		attackName: ['tries to hiss at', 'hisses at'],
+		aiMode: 'ranged'
+	},
+	//mirror monster (normal speed, ranged only, shatters when you throw horseshoe at it)
+	'n': {
+		desc: ['a mirror monster', 'the mirror monster'],
+		attackName: ['tries to cast an evil look at', 'casts an evil look at'],
+		aiMode: 'ranged',
+		block: 0
+	},
+	//Lord Balsekil and his henchmen
+	'&1': {
+		desc: ['one of Balsekil’s henchmen', 'Henchman No. '],
+		aiMode: 'meleeRanged',
+		block: 0.15,
+		health: 15,
+		minAttack: 1,
+		maxAttack: 3
+	},
+	'&2': {
+		desc: ['Lord Balsekil', 'Lord Balsekil'],
+		aiMode: 'meleeRanged',
+		block: 0.2,
+		health: 25,
+		minAttack: 1,
+		maxAttack: 5,
+		experience: 1.5
+	},
+	//chimney sweep (gives hints)
+	'@2': {
+		desc: ['a chimney sweep', 'the chimney sweep'],
+		aiMode: 'hint',
+		block: 1
+	}
 };
-/*
-brown newt: slow, melee only ("touch")
-black crow: fast, melee only ("peck")
-black cat: normal speed, ranged only ("hiss")
-
-all three in small, normal size, large
-
-mirror monster: normal speed, ranged only ("evil look"); will shatter immediately when hit with horseshoe, but gives much bad luck to player
-
-henchman (13 of them): normal speed, melee and ranged ("spill salt"?)
-Lord XIII (unique): normal speed, melee and ranged
-
-chimney sweep: no attacks, gives hint
-
-player attacks
-melee: hit (with fingers crossed?)
-ranged: yell lucky number, throw horseshoe (once you found one)
-when horseshoe is not thrown it increases protection
-
-items for player:
-lucky charm: find all to win (7 of them?)
-horseshoe: as above (unique)
-lamp (unique), lucky mushroom, four-leave clover: as implemented
-*/
 
 Monster.prototype.getDesc = function (the) {
-	return Monster.desc[this.type][the ? 1 : 0];
+	return this.desc[the ? 1 : 0];
 };
 
 Monster.prototype.walkRandom = function (player) {

@@ -4,7 +4,10 @@ events =
 (function () {
 "use strict";
 
-var queue = [], queueTimeout, DELAY = 200, player, gameOver = false,
+var queue = [], queueTimeout,
+	rangedTargets,
+	DELAY = 200,
+	player, gameOver = false,
 	canvas = new Canvas('canvas');
 
 function getPrintableKey (code, shift) {
@@ -74,11 +77,24 @@ function addWait (repeat) {
 }
 
 function onKey (e) {
+	var key;
+
 	if (e.ctrlKey || e.altKey) {
 		return;
 	}
+	key = getKey(e);
 	queue = []; //abort any ongoing action
-	switch (getKey(e)) {
+
+	if (rangedTargets) {
+		if (rangedTargets[key]) {
+			queue.push(rangedTargets[key]);
+		}
+		rangedTargets = false;
+		canvas.clearTargets();
+		key = '';
+	}
+
+	switch (key) {
 	case '1':
 	case 'End':
 		addMove(-1, 1, e.shiftKey);
@@ -201,7 +217,7 @@ function init (p) {
 }
 
 function workQueue () {
-	var action, didSomething = false, i, monster, monsterSeen, path;
+	var action, didSomething = false, i, c, monster, monsterSeen, path;
 	clearTimeout(queueTimeout);
 	while (!didSomething) {
 		if (queue.length === 0) {
@@ -234,11 +250,24 @@ function workQueue () {
 						monster = null;
 					}
 				}
+			} else if (player.level.visibleMonsters.length > 1) {
+				rangedTargets = {};
+				for (i = 0; i < player.level.visibleMonsters.length; i++) {
+					monster = player.level.visibleMonsters[i];
+					c = i < 9 ? String(i + 1) : String.fromCharCode(97 + i - 9);
+					rangedTargets[c] = ['attack', monster.x, monster.y];
+					canvas.showTarget(monster.x, monster.y, c);
+				}
+				monster = null;
+				log('pick the target (1–' + c + ').');
 			} else {
-				monster = player.level.visibleMonsters[0]; //TODO allow picking a monster if there is more than one
+				monster = player.level.visibleMonsters[0];
 			}
 			if (monster) {
 				player.attack(monster, true);
+				if (player.hasHorseshoe) {
+					player.usesHorseshoe = true;
+				}
 				didSomething = true;
 			}
 			break;
@@ -264,7 +293,8 @@ function workQueue () {
 	log.async(true);
 	//otherwise you might get the message "monster hits you" before "you see monster"
 
-	player.level.spawnMonster(player);
+	player.steps++;
+	player.dungeon.spawnMonster(player);
 	for (i = 0; i < player.level.npc.length; i++) {
 		monster = player.level.npc[i];
 		if (!monster.speed) {
@@ -277,7 +307,8 @@ function workQueue () {
 			}
 		}
 	}
-	player.handleMushroomTimeout();
+	player.handleTimeouts();
+	player.usesHorseshoe = false;
 
 	log.async(false);
 	monsterSeen = player.level.draw(canvas, player);
@@ -293,6 +324,9 @@ function workQueue () {
 	if (player.luckyCharms === 3) {
 		log('you found all lucky charms and win the game.');
 		gameOver = true;
+	}
+	if (gameOver) {
+		log(player.getResult());
 	}
 	if (queue.length > 0) {
 		queueTimeout = setTimeout(workQueue, DELAY);

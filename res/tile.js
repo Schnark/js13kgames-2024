@@ -54,11 +54,15 @@ Tile.draw = {
 		ctx.fillRect(0, 0, 16, 16);
 	},
 	'(': function (ctx) {
-		ctx.fillStyle = '#f80';
+		ctx.fillStyle = '#ff0';
 		ctx.fillRect(0, 0, 16, 16);
 	},
 	'*': function (ctx) {
-		ctx.fillStyle = '#ff0';
+		ctx.fillStyle = '#f0f';
+		ctx.fillRect(0, 0, 16, 16);
+	},
+	')': function (ctx) {
+		ctx.fillStyle = '#f80';
 		ctx.fillRect(0, 0, 16, 16);
 	}
 };
@@ -71,6 +75,7 @@ Tile.prototype.draw = function (canvas, currentlySeen) {
 		return;
 	}
 	Tile.draw[this.type](canvas.ctx);
+	//TODO for walls cover unseen parts?
 	if (!currentlySeen) {
 		Tile.draw['.'](canvas.ctx);
 	}
@@ -89,8 +94,9 @@ Tile.prototype.getType = function () {
 	return this.type;
 };
 
-Tile.prototype.takeItem = function () {
-	this.type = ' ';
+//also used to drop an item
+Tile.prototype.takeItem = function (c) {
+	this.type = c || ' ';
 };
 
 return Tile;

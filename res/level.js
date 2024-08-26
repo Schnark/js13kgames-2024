@@ -1,5 +1,5 @@
 /*global Level: true*/
-/*global Tile, Monster, log*/
+/*global Tile, log*/
 Level =
 (function () {
 "use strict";
@@ -89,8 +89,8 @@ Level.prototype.getType = function (x, y) {
 	return this.tiles[y][x].getType();
 };
 
-Level.prototype.takeItem = function (x, y) {
-	return this.tiles[y][x].takeItem();
+Level.prototype.takeItem = function (x, y, c) {
+	return this.tiles[y][x].takeItem(c);
 };
 
 Level.prototype.monsterAt = function (x, y) {
@@ -129,30 +129,8 @@ Level.prototype.findFreeTile = function (player) {
 	}
 };
 
-Level.prototype.spawnMonster = function (player, init) {
-	var pos, monster;
-	if (!init && Math.random() > 0.05) {
-		return;
-	}
-
-	if (init && this.depth === 2) {
-		pos = this.findFirst('<');
-		if (this.isOpen(pos[0] - 1, pos[1])) {
-			pos[0]--;
-		} else {
-			pos[0]++;
-		}
-		monster = new Monster('A', pos[0], pos[1], this);
-		monster.aiMode = 'hint';
-		monster.block = 1;
-		this.npc.push(monster);
-	}
-
-	pos = this.findFreeTile(player);
-	if (!pos) {
-		return;
-	}
-	monster = new Monster('x', pos[0], pos[1], this);
+Level.prototype.addMonster = function (monster, x, y) {
+	monster.place(x, y, this);
 	this.npc.push(monster);
 };
 

@@ -17,10 +17,45 @@ MonsterBase.draw = {
 		ctx.fillStyle = 'green';
 		ctx.fillRect(4, 4, 8, 8);
 	},
-	'A': function (ctx) {
+	'@2': function (ctx) {
 		ctx.fillStyle = 'black';
 		ctx.fillRect(4, 4, 8, 8);
+	},
+	'n': function (ctx) {
+		ctx.fillStyle = 'silver';
+		ctx.fillRect(4, 4, 8, 8);
+	},
+	'&1': function (ctx) {
+		ctx.fillStyle = 'orange';
+		ctx.fillRect(4, 4, 8, 8);
+	},
+	'&2': function (ctx) {
+		ctx.fillStyle = 'red';
+		ctx.fillRect(4, 4, 8, 8);
 	}
+};
+
+MonsterBase.prototype.init = function (data) {
+	this.health = data.health || 10;
+	this.maxHealth = data.health || 10;
+	this.experience = data.experience || 1;
+	this.block = data.block || 0.1;
+	this.minAttack = data.minAttack || 1;
+	this.maxAttack = data.maxAttack || 2;
+	if (data.speed) {
+		this.speed = 1 / data.speed;
+	}
+	this.aiMode = data.aiMode;
+	if (data.desc) {
+		this.desc = JSON.parse(JSON.stringify(data.desc));
+	}
+	this.attackName = data.attackName;
+};
+
+MonsterBase.prototype.place = function (x, y, level) {
+	this.x = x;
+	this.y = y;
+	this.level = level;
 };
 
 MonsterBase.prototype.drawHealth = function (ctx, w, h) {
@@ -72,11 +107,11 @@ MonsterBase.prototype.moveRel = function (dx, dy) {
 };
 
 MonsterBase.prototype.rangedFails = function (d) {
-	return Math.random() < (Math.pow(1.5, d / 2) - 1) / this.experience;
+	return Math.random() < (Math.pow(1.3, d / 2) - 1) / this.experience;
 };
 
 MonsterBase.prototype.blockAttack = function () {
-	return Math.random() < this.block * this.experience;
+	return Math.random() < this.block * this.experience * (this.hasHorseshoe && !this.usesHorseshoe ? 3 : 1);
 };
 
 MonsterBase.prototype.getAttackDamage = function () {
@@ -85,14 +120,47 @@ MonsterBase.prototype.getAttackDamage = function () {
 
 //only used for player
 MonsterBase.prototype.improveExperience = function (maxTargetHealth) {
-	var newExperience = this.experience * Math.pow(2, maxTargetHealth / 500);
+	var newExperience;
+	if (this.luckyMushroomTimeout) {
+		this.experience /= 2;
+	}
+	newExperience = this.experience * Math.pow(2, maxTargetHealth / 500);
+	if (newExperience > 2) {
+		newExperience = 2;
+	}
 	if (Math.floor(newExperience * 10) !== Math.floor(this.experience * 10)) {
 		log('you feel more experienced now.');
 	}
 	this.experience = newExperience;
+	if (this.luckyMushroomTimeout) {
+		this.experience *= 2;
+	}
+};
+
+MonsterBase.prototype.getAttackName = function (ranged, failed) {
+	var msg;
+	if (this.isPlayer) {
+		if (ranged) {
+			msg = this.hasHorseshoe ? 'throw your horseshoe at' : 'yell your lucky number at';
+		} else {
+			msg = 'hit';
+		}
+		if (failed) {
+			msg = 'try to ' + msg;
+		}
+		return 'you ' + msg + ' ';
+	} else {
+		if (this.attackName) {
+			msg = this.attackName[failed ? 0 : 1];
+		} else {
+			msg = failed ? 'tries to attack' : 'attacks';
+		}
+		return this.getDesc(true) + ' ' + msg + ' ';
+	}
 };
 
 MonsterBase.prototype.attack = function (target, ranged) {
+	var died;
 
 	function dist (a, b) {
 		var x = a.x - b.x, y = a.y - b.y;
@@ -104,32 +172,47 @@ MonsterBase.prototype.attack = function (target, ranged) {
 	}
 	if (ranged && this.rangedFails(dist(target, this))) {
 		if (this.isPlayer) {
-			log('you try to hit ' + target.getDesc(true) + ', but miss.');
+			log(this.getAttackName(true, true) + target.getDesc(true) + ', but miss.');
 		} else {
-			log(this.getDesc(true) + ' tries to hit you, but misses.');
+			log(this.getAttackName(true, true) + 'you, but misses.');
 		}
+		return;
+	}
+	if (ranged && this.hasHorseshoe && target.type === 'n') {
+		log('uh-oh! The mirror-monster shatters!');
+		target.level.removeMonster(target);
+		this.reduceHealth(20);
 		return;
 	}
 	if (target.blockAttack()) {
 		if (this.isPlayer) {
-			log('you try to hit ' + target.getDesc(true) + ', but your attack is blocked.');
+			log(this.getAttackName(ranged, true) + target.getDesc(true) + ', but your attack is blocked.');
 		} else {
-			log(this.getDesc(true) + ' tries to hit you, but you block the attack.');
+			log(this.getAttackName(ranged, true) + 'you, but you block the attack.');
 		}
 		return;
 	}
 	if (this.isPlayer) {
-		log('you hit ' + target.getDesc(true) + '.');
+		log(this.getAttackName(ranged) + target.getDesc(true) + '.');
 	} else {
-		log(this.getDesc(true) + ' hits you.');
-	}
-	target.health -= this.getAttackDamage();
-	if (target.health <= 0) {
-		target.health = 0;
-		target.die();
-		if (this.isPlayer) {
-			this.improveExperience(target.maxHealth);
+		log(this.getAttackName(ranged) + 'you.');
+		if (this.type === 'B' && Math.random() < 0.2) {
+			log(this.getDesc(true) + ' hits your eyes.');
+			target.makeBlind();
 		}
+	}
+	died = target.reduceHealth(this.getAttackDamage());
+	if (died && this.isPlayer) {
+		this.improveExperience(target.maxHealth);
+	}
+};
+
+MonsterBase.prototype.reduceHealth = function (damage) {
+	this.health -= damage;
+	if (this.health <= 0) {
+		this.health = 0;
+		this.die();
+		return true;
 	}
 };
 
@@ -138,6 +221,14 @@ MonsterBase.prototype.die = function () {
 		log('you are out of luck and lose the game.');
 	} else {
 		log(this.getDesc(true) + ' vanishes.');
+		if (this.type === '&2') {
+			this.level.takeItem(this.x, this.y, '*');
+			//NOTE when we are on a ladder, this will remove the ladder
+			//and if there are still charms above you will lose the game
+			//but this is very rare and the ladder might have been destroyed
+			//during the fight
+			log(this.getDesc(true) + ' left back a lucky charm!');
+		}
 		this.level.removeMonster(this);
 	}
 };

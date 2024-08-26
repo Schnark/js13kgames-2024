@@ -30,5 +30,20 @@ Canvas.prototype.getTile = function (x, y) {
 	return [x, y];
 };
 
+Canvas.prototype.showTarget = function (x, y, c) {
+	x = x * 16 + 8;
+	y = y * 16 + 8;
+	this.ctx.fillStyle = 'rgba(255,255,255,0.75)';
+	this.ctx.fillRect(x, y, 8, 8);
+	this.ctx.font = '10px monospace';
+	this.ctx.textAlign = 'center';
+	this.ctx.fillStyle = '#000';
+	this.ctx.fillText(c, x + 4, y + 8);
+};
+
+Canvas.prototype.clearTargets = function () {
+	//TODO
+};
+
 return Canvas;
 })();
