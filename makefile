@@ -1,13 +1,17 @@
 JS = res/log.js res/generate-level.js res/canvas.js res/tile.js res/level.js res/dungeon.js res/monster-base.js res/monster.js res/player.js res/events.js res/game.js
-GLOBAL = log, generateLevel, Canvas, Tile, Level, Dungeon, MonsterBase, Monster, Player, events
+GLOBAL = SPRITE_URL, log, generateLevel, Canvas, Tile, Level, Dungeon, MonsterBase, Monster, Player, events
 
 .PHONY: check
 check: min/game.zip
 	@echo
 	@stat --printf="Current size: %s B (" min/game.zip && (echo "scale=2;" && stat --printf="%s" min/game.zip && echo "*100/(13*1024)") | bc -l | tr -d '\n' && echo " %)"
 
-min/all.js: $(JS)
-	(echo "(function(){var $(GLOBAL);" && cat $(JS) && echo "})()") > min/all.js
+min/sprites.png: res/sprites.png
+	cp res/sprites.png min/sprites.png
+	optipng -o7 min/sprites.png
+
+min/all.js: $(JS) min/sprites.png
+	(echo "(function(){var $(GLOBAL);" && echo -n "SPRITE_URL = 'data:image/png;base64," && base64 -w0 min/sprites.png && echo "';" && cat $(JS) && echo "})()") > min/all.js
 
 min/min.js: min/all.js
 	minify-js min/all.js > min/min.js

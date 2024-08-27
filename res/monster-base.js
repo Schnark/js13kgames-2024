@@ -1,5 +1,5 @@
 /*global MonsterBase: true*/
-/*global log*/
+/*global Canvas, log*/
 MonsterBase =
 (function () {
 "use strict";
@@ -9,29 +9,47 @@ function MonsterBase () {
 }
 
 MonsterBase.draw = {
-	'@': function (ctx) {
-		ctx.fillStyle = 'blue';
-		ctx.fillRect(4, 4, 8, 8);
+	'@': function (ctx, sprites) {
+		ctx.drawImage(sprites[9], 0, 0);
 	},
-	'x': function (ctx) {
-		ctx.fillStyle = 'green';
-		ctx.fillRect(4, 4, 8, 8);
+	'@2': function (ctx, sprites) {
+		ctx.drawImage(sprites[10], 0, 0);
 	},
-	'@2': function (ctx) {
-		ctx.fillStyle = 'black';
-		ctx.fillRect(4, 4, 8, 8);
+	':1': function (ctx, sprites) {
+		ctx.drawImage(sprites[11], 0, 0);
 	},
-	'n': function (ctx) {
-		ctx.fillStyle = 'silver';
-		ctx.fillRect(4, 4, 8, 8);
+	':2': function (ctx, sprites) {
+		ctx.drawImage(sprites[11], 0, 0);
 	},
-	'&1': function (ctx) {
-		ctx.fillStyle = 'orange';
-		ctx.fillRect(4, 4, 8, 8);
+	':3': function (ctx, sprites) {
+		ctx.drawImage(sprites[11], 0, 0);
 	},
-	'&2': function (ctx) {
-		ctx.fillStyle = 'red';
-		ctx.fillRect(4, 4, 8, 8);
+	'f1': function (ctx, sprites) {
+		ctx.drawImage(sprites[12], 0, 0);
+	},
+	'f2': function (ctx, sprites) {
+		ctx.drawImage(sprites[12], 0, 0);
+	},
+	'f3': function (ctx, sprites) {
+		ctx.drawImage(sprites[12], 0, 0);
+	},
+	'B1': function (ctx, sprites) {
+		ctx.drawImage(sprites[13], 0, 0);
+	},
+	'B2': function (ctx, sprites) {
+		ctx.drawImage(sprites[13], 0, 0);
+	},
+	'B3': function (ctx, sprites) {
+		ctx.drawImage(sprites[13], 0, 0);
+	},
+	'n': function (ctx, sprites) {
+		ctx.drawImage(sprites[14], 0, 0);
+	},
+	'&1': function (ctx, sprites) {
+		ctx.drawImage(sprites[15], 0, 0);
+	},
+	'&2': function (ctx, sprites) {
+		ctx.drawImage(sprites[16], 0, 0);
 	}
 };
 
@@ -70,7 +88,7 @@ MonsterBase.prototype.drawHealth = function (ctx, w, h) {
 };
 
 MonsterBase.prototype.draw = function (canvas) {
-	MonsterBase.draw[this.type](canvas.ctx);
+	MonsterBase.draw[this.type](canvas.ctx, canvas.sprites);
 	if (!this.isPlayer && this.health < this.maxHealth) {
 		canvas.ctx.translate(2, 2);
 		this.drawHealth(canvas.ctx, 12, 4);
@@ -129,7 +147,7 @@ MonsterBase.prototype.improveExperience = function (maxTargetHealth) {
 		newExperience = 2;
 	}
 	if (Math.floor(newExperience * 10) !== Math.floor(this.experience * 10)) {
-		log('you feel more experienced now.');
+		log('you feel more experienced now.', 'b');
 	}
 	this.experience = newExperience;
 	if (this.luckyMushroomTimeout) {
@@ -170,6 +188,9 @@ MonsterBase.prototype.attack = function (target, ranged) {
 	if (target.health === 0) {
 		return;
 	}
+	if (ranged) {
+		Canvas.addAnimation(this.x, this.y, target.x, target.y, this.hasHorseshoe);
+	}
 	if (ranged && this.rangedFails(dist(target, this))) {
 		if (this.isPlayer) {
 			log(this.getAttackName(true, true) + target.getDesc(true) + ', but miss.');
@@ -179,7 +200,7 @@ MonsterBase.prototype.attack = function (target, ranged) {
 		return;
 	}
 	if (ranged && this.hasHorseshoe && target.type === 'n') {
-		log('uh-oh! The mirror-monster shatters!');
+		log('uh-oh! The mirror-monster shatters!', 'b');
 		target.level.removeMonster(target);
 		this.reduceHealth(20);
 		return;
@@ -196,7 +217,7 @@ MonsterBase.prototype.attack = function (target, ranged) {
 		log(this.getAttackName(ranged) + target.getDesc(true) + '.');
 	} else {
 		log(this.getAttackName(ranged) + 'you.');
-		if (this.type === 'B' && Math.random() < 0.2) {
+		if (this.type.charAt(0) === 'B' && Math.random() < 0.2) {
 			log(this.getDesc(true) + ' hits your eyes.');
 			target.makeBlind();
 		}
@@ -218,16 +239,16 @@ MonsterBase.prototype.reduceHealth = function (damage) {
 
 MonsterBase.prototype.die = function () {
 	if (this.isPlayer) {
-		log('you are out of luck and lose the game.');
+		log('you are out of luck and lose the game.', 'b');
 	} else {
-		log(this.getDesc(true) + ' vanishes.');
+		log(this.getDesc(true) + ' vanishes.', 'b');
 		if (this.type === '&2') {
 			this.level.takeItem(this.x, this.y, '*');
 			//NOTE when we are on a ladder, this will remove the ladder
 			//and if there are still charms above you will lose the game
 			//but this is very rare and the ladder might have been destroyed
 			//during the fight
-			log(this.getDesc(true) + ' left back a lucky charm!');
+			log(this.getDesc(true) + ' left back a lucky charm!', 'b');
 		}
 		this.level.removeMonster(this);
 	}

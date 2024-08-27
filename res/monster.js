@@ -18,12 +18,6 @@ Monster.prototype = new MonsterBase();
 
 //TODO balance values (also elsewhere)
 Monster.data = {
-	//TODO remove (debug only)
-	'x': {
-		desc: ['a green monster', 'the green monster'],
-		attackName: ['tries to bite', 'bites'],
-		speed: 0.75
-	},
 	//newts (slow, melee only)
 	':1': {
 		desc: ['a small newt', 'the small newt'],
@@ -186,7 +180,7 @@ Monster.prototype.hintAI = function (player) {
 	}
 	hint = player.getHint();
 	if (this.lastHint !== hint) {
-		log(this.getDesc(true) + ': “' + hint + '”');
+		log(this.getDesc(true) + ': “' + hint + '”', 'b');
 		this.lastHint = hint;
 	} else {
 		this.walkRandom(player);

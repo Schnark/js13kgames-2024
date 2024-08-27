@@ -29,20 +29,49 @@ On last level Lord Balsekil and all remaining henchmen (including those from abo
 function Dungeon () {
 	var i, j, c;
 
-	this.items = [[], [], []];
-	this.items[Math.floor(Math.random() * 2)].push('(');
-	this.items[Math.floor(Math.random() * 2)].push(')');
-	this.items[Math.floor(Math.random() * 2)].push('*');
-	this.items[Math.floor(Math.random() * 2)].push('*');
-	for (i = 0; i < this.items.length; i++) {
+	function normalize (data) {
+		var keys = Object.keys(data), i, s = 0;
+		for (i = 0; i < keys.length; i++) {
+			s += data[keys[i]];
+		}
+		for (i = 0; i < keys.length; i++) {
+			data[keys[i]] /= s;
+		}
+		return data;
+	}
+
+	this.levelData = [{items: [], monsters: []}, {items: [], monsters: []}, {items: [], monsters: []}];
+	//items
+	this.levelData[Math.floor(Math.random() * 2)].items.push('(');
+	this.levelData[Math.floor(Math.random() * 2)].items.push(')');
+	this.levelData[Math.floor(Math.random() * 2)].items.push('*');
+	this.levelData[Math.floor(Math.random() * 2)].items.push('*');
+	for (i = 0; i < this.levelData.length; i++) {
 		c = 2 + Math.floor(Math.random() * 2);
 		for (j = 0; j < c; j++) {
-			this.items[i].push('%');
+			this.levelData[i].items.push('%');
 		}
 		c = 1 + Math.floor(Math.random() * 2);
 		for (j = 0; j < c; j++) {
-			this.items[i].push('F');
+			this.levelData[i].items.push('F');
 		}
+	}
+	//monsters
+	for (i = 0; i < this.levelData.length; i++) {
+		this.levelData[i].monsters.push(':1');
+		this.levelData[i].monsters.push((i + 1) * Math.random() < 1 ? ':1' : ':2');
+		if (i === 1) {
+			this.levelData[i].monsters.push(Math.random() < 0.5 ? '&1' : 'n');
+		}
+		if (i >= 1) {
+			this.levelData[i].monsters.push(Math.random() < 0.5 ? 'f1' : 'B1');
+		}
+		this.levelData[i].monsterProbs = normalize({
+			':1': 3, ':2': 2, ':3': 1,
+			'f1': (i - 1), 'f2': (i - 1) / 2, 'f3': (i - 1) / 4,
+			'B1': (i - 1), 'B2': (i - 1) / 2, 'B3': (i - 1) / 4,
+			'n': 2, '&1': 1
+		});
 	}
 
 	this.levels = [this.createLevel(3, 3, 0)];
@@ -72,13 +101,13 @@ Dungeon.prototype.createLevel = function (x0, y0, depth) {
 		map = map.replace(/./, c); //if it failed that often, just use the first place
 	}
 
-	for (i = 0; i < this.items[depth].length; i++) {
-		addRandom(this.items[depth][i]);
+	for (i = 0; i < this.levelData[depth].items.length; i++) {
+		addRandom(this.levelData[depth].items[i]);
 	}
 	map = map.replace(/\./g, ' ');
 	if (depth === 0) {
 		map = map.replace('<', ' ');
-	} else if (depth === this.items.length - 1) {
+	} else if (depth === this.levelData.length - 1) {
 		map = map.replace('>', ' ');
 	}
 	return new Level(map, depth);
@@ -117,21 +146,24 @@ Dungeon.prototype.createHenchman = function () {
 	return monster;
 };
 
+Dungeon.prototype.createMonster = function (type) {
+	if (type === '&1') {
+		return this.createHenchman();
+	}
+	return new Monster(type);
+};
+
 Dungeon.prototype.createRandomMonster = function (data) {
-	var keys = Object.keys(data), p = Math.random(), monster;
+	var keys = Object.keys(data), p = Math.random();
 	while (keys.length > 1 && data[keys[0]] < p) {
 		p -= data[keys[0]];
 		keys.shift();
 	}
-	monster = keys[0];
-	if (monster === '&1') {
-		return this.createHenchman();
-	}
-	return new Monster(monster);
+	return this.createMonster(keys[0]);
 };
 
 Dungeon.prototype.initMonsters = function (player) {
-	var pos, level = this.levels[this.currentLevel];
+	var pos, level = this.levels[this.currentLevel], i, data;
 	if (this.currentLevel === 2) {
 		pos = level.findFirst('<');
 		if (level.isOpen(pos[0] - 1, pos[1])) {
@@ -140,7 +172,8 @@ Dungeon.prototype.initMonsters = function (player) {
 			pos[0]++;
 		}
 		level.addMonster(new Monster('@2'), pos[0], pos[1]);
-
+	}
+	if (this.currentLevel === this.levelData.length - 1) {
 		pos = level.findFreeTile(player); //TODO place him in a free arean
 		level.addMonster(new Monster('&2'), pos[0], pos[1]);
 
@@ -149,9 +182,12 @@ Dungeon.prototype.initMonsters = function (player) {
 		pos = level.findFreeTile(player); //TODO place him near Lord Balsekil
 		level.addMonster(this.createHenchman(), pos[0], pos[1]);
 	}
-	pos = level.findFreeTile(player);
-	if (pos) {
-		level.addMonster(this.createRandomMonster({'x': 0.5, '&1': 0.5}), pos[0], pos[1]);
+	data = this.levelData[this.currentLevel].monsters;
+	for (i = 0; i < data.length; i++) {
+		pos = level.findFreeTile(player);
+		if (pos) {
+			level.addMonster(this.createMonster(data[i]), pos[0], pos[1]);
+		}
 	}
 };
 
@@ -162,7 +198,7 @@ Dungeon.prototype.spawnMonster = function (player) {
 	}
 	pos = level.findFreeTile(player);
 	if (pos) {
-		level.addMonster(this.createRandomMonster({'x': 0.75, 'n': 0.25}), pos[0], pos[1]);
+		level.addMonster(this.createRandomMonster(this.levelData[this.currentLevel].monsterProbs), pos[0], pos[1]);
 	}
 };
 
@@ -184,7 +220,7 @@ Dungeon.prototype.transferHenchmen = function (player, level) {
 		}
 	}
 	if (somethingDone) {
-		log('you sense that all of Lord Balsekil’s henchmen rushed to his help.');
+		log('you sense that all of Lord Balsekil’s henchmen rushed to his help.', 'b');
 	}
 	this.henchmenTransferred = true;
 };

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width">
 <!--delete from here-->
 <link rel="stylesheet" href="res/game.css">
+<script>SPRITE_URL = 'res/sprites.png';</script>
 <script src="res/log.js" defer></script>
 <script src="res/generate-level.js" defer></script>
 <script src="res/canvas.js" defer></script>
@@ -24,7 +25,10 @@ insert min.css
 delete line-->
 </head><body>
 <ol id="log" reversed></ol>
+<div id="wrap">
 <canvas id="canvas" moz-opaque></canvas>
+<canvas id="cover"></canvas>
+</div>
 <p>Luck: <span id="luck"></span><br>
 <canvas id="luck-canvas" moz-opaque></canvas></p>
 <p id="inv"></p>

@@ -55,15 +55,20 @@ Player.prototype.showInv = function () {
 };
 
 Player.prototype.getHint = function () {
-	//TODO
-	var missed = [
-		this.missedEarlyLuckyCharms ? (this.missedEarlyLuckyCharms + ' lucky charm(s)') : '',
-		this.hasLamp ? '' : 'a flashlight',
-		this.hasHorseshoe ? '' : 'a horseshoe'
-	].filter(function (entry) {
-		return entry;
-	}).join(', ');
-	return missed ? ('You should go back, there are useful things above you did not find yet: ' + missed) : 'Well done so far! Now find and defeat Lord Balsekil who has the third lucky charm.';
+	var a = 'You should go back and get the ', b = ' before proceeding further.';
+	if (!this.hasHorseshoe) {
+		return a + 'horseshoe' + b;
+	}
+	if (!this.hasLamp) {
+		return a + 'flashlight' + b;
+	}
+	if (this.missedEarlyLuckyCharms === 1) {
+		return a + 'lucky charm' + b;
+	}
+	if (this.missedEarlyLuckyCharms) {
+		return a + this.missedEarlyLuckyCharms + ' lucky charms' + b;
+	}
+	return 'Well done so far! Now find and defeat Lord Balsekil who has the third lucky charm.'; //TODO
 };
 
 Player.prototype.getResult = function () {
@@ -73,7 +78,10 @@ Player.prototype.getResult = function () {
 	}
 	experience = Math.round(100 * (experience - 1));
 	points = this.luckyCharms * 1000 + (this.maxDepth + 1) * 50 + Math.round(experience / 2) + this.health;
-	return 'After ' + this.steps + ' steps you found ' + this.luckyCharms + ' lucky charms, reached a depth of ' + (this.maxDepth + 1) + ', and increased your experience by ' + experience + ' %. For this you earn ' + points + ' points.';
+	return 'After ' + this.steps + ' steps you found ' +
+		(this.luckyCharms === 1 ? 'one lucky charm' : (this.luckyCharms || 'no') + ' lucky charms') +
+		', reached a depth of ' + (this.maxDepth + 1) +
+		', and increased your experience by ' + experience + ' %. For this you earn ' + points + ' points.';
 };
 
 function bresenham (x0, y0, x1, y1, isOpen) {
@@ -127,7 +135,9 @@ Player.prototype.canSee = function (x, y) {
 Player.prototype.handleItem = function (type) {
 	var msg, take = false;
 	//TODO add fortune cookies with general hints?
-	if (type === '<') {
+	if (type === '>' && this.level.depth === 0) {
+		log('you found the ladder down to the second level.');
+	} else if (type === '<') {
 		if (Math.random() < 0.3) {
 			log('you accidentally walked below the ladder.');
 			this.reduceHealth(2);
@@ -151,24 +161,24 @@ Player.prototype.handleItem = function (type) {
 		}
 		this.luckyCharms++;
 		take = true;
-		log('you found a lucky charm.');
+		log('you found a lucky charm.', 'b');
 	} else if (type === 'F') {
 		this.luckyMushrooms++;
 		take = true;
-		log('you found a lucky mushroom' + (this.luckyMushrooms === 1 ? ', which you can eat to make you very strong for a short time' : '') + '.');
+		log('you found a lucky mushroom' + (this.luckyMushrooms === 1 ? ', which you can eat to make you very strong for a short time' : '') + '.', this.luckyMushrooms === 1 ? 'b' : '');
 	} else if (type === '(') {
 		take = true;
 		this.hasLamp = true;
 		if (!this.blind) {
 			this.sightRadius = 6;
 		}
-		log('you found a flashlight.');
+		log('you found a flashlight.', 'b');
 	} else if (type === ')') {
 		take = true;
 		this.hasHorseshoe = true;
 		this.minAttack = 2;
 		this.maxAttack = 4;
-		log('you found a horseshoe. From now on you will use it for attacks (it will return like a boomerang), and to defend attacks (but only if you did not just throw it).');
+		log('you found a horseshoe. From now on you will use it for attacks (it will return like a boomerang), and to defend attacks (but only if you did not just throw it).', 'b');
 	}
 	if (take) {
 		this.showInv();
@@ -184,7 +194,7 @@ Player.prototype.eat = function () {
 	this.showInv();
 	if (this.luckyMushroomTimeout === 0) {
 		this.experience *= 2;
-		log('you feel very strong!');
+		log('you feel very strong!', 'b');
 	}
 	this.luckyMushroomTimeout += Math.floor(4 + Math.random() * 5); //will be decreased immediately
 	return true;
@@ -204,7 +214,7 @@ Player.prototype.handleTimeouts = function () {
 		this.luckyMushroomTimeout--;
 		if (this.luckyMushroomTimeout === 0) {
 			this.experience /= 2;
-			log('you feel normal again.');
+			log('you feel normal again.', 'b');
 		}
 	}
 	if (this.blindTimeout > 0) {

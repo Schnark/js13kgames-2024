@@ -208,12 +208,14 @@ function onMouseInv (e) {
 }
 
 function init (p) {
-	player = p;
-	document.addEventListener('keydown', onKey);
-	canvas.canvas.addEventListener('click', onMouse);
-	document.getElementById('inv').addEventListener('click', onMouseInv);
-	player.level.draw(canvas, player);
-	log('welcome. Find all three lucky charms to win.');
+	canvas.loadSprites(function () {
+		player = p;
+		document.addEventListener('keydown', onKey);
+		canvas.canvas.addEventListener('click', onMouse);
+		document.getElementById('inv').addEventListener('click', onMouseInv);
+		player.level.draw(canvas, player);
+		log('welcome. Find all three lucky charms to win.', 'b');
+	});
 }
 
 function workQueue () {
@@ -312,6 +314,7 @@ function workQueue () {
 
 	log.async(false);
 	monsterSeen = player.level.draw(canvas, player);
+	canvas.runAnimations();
 	log.clearQueue();
 
 	if (monsterSeen) {
@@ -322,7 +325,7 @@ function workQueue () {
 		gameOver = true;
 	}
 	if (player.luckyCharms === 3) {
-		log('you found all lucky charms and win the game.');
+		log('you found all lucky charms and win the game.', 'b');
 		gameOver = true;
 	}
 	if (gameOver) {

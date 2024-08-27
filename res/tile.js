@@ -13,57 +13,37 @@ Tile.draw = {
 		ctx.fillStyle = 'rgba(128,128,128,0.75)';
 		ctx.fillRect(0, 0, 16, 16);
 	},
-	' ': function (ctx) {
-		ctx.fillStyle = '#fff';
-		ctx.fillRect(0, 0, 16, 16);
+	' ': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
 	},
-	'#': function (ctx) {
-		ctx.fillStyle = 'brown';
-		ctx.fillRect(0, 0, 16, 16);
+	'#': function (ctx, sprites) {
+		ctx.drawImage(sprites[1], 0, 0);
 	},
-	'>': function (ctx) {
-		ctx.fillStyle = '#fff';
-		ctx.fillRect(0, 0, 16, 16);
-		ctx.strokeStyle = 'brown';
-		ctx.beginPath();
-		ctx.moveTo(7.5, 2);
-		ctx.lineTo(7.5, 14);
-		ctx.lineTo(3.5, 10);
-		ctx.lineTo(11.5, 10);
-		ctx.lineTo(7.5, 14);
-		ctx.stroke();
+	'>': function (ctx, sprites) {
+		ctx.drawImage(sprites[2], 0, 0);
 	},
-	'<': function (ctx) {
-		ctx.fillStyle = '#fff';
-		ctx.fillRect(0, 0, 16, 16);
-		ctx.strokeStyle = 'brown';
-		ctx.beginPath();
-		ctx.moveTo(7.5, 14);
-		ctx.lineTo(7.5, 2);
-		ctx.lineTo(3.5, 6);
-		ctx.lineTo(11.5, 6);
-		ctx.lineTo(7.5, 2);
-		ctx.stroke();
+	'<': function (ctx, sprites) {
+		ctx.drawImage(sprites[3], 0, 0);
 	},
-	'%': function (ctx) {
-		ctx.fillStyle = '#8f8';
-		ctx.fillRect(0, 0, 16, 16);
+	'F': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
+		ctx.drawImage(sprites[4], 0, 0);
 	},
-	'F': function (ctx) {
-		ctx.fillStyle = '#f88';
-		ctx.fillRect(0, 0, 16, 16);
+	'%': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
+		ctx.drawImage(sprites[5], 0, 0);
 	},
-	'(': function (ctx) {
-		ctx.fillStyle = '#ff0';
-		ctx.fillRect(0, 0, 16, 16);
+	'*': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
+		ctx.drawImage(sprites[6], 0, 0);
 	},
-	'*': function (ctx) {
-		ctx.fillStyle = '#f0f';
-		ctx.fillRect(0, 0, 16, 16);
+	')': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
+		ctx.drawImage(sprites[7], 0, 0);
 	},
-	')': function (ctx) {
-		ctx.fillStyle = '#f80';
-		ctx.fillRect(0, 0, 16, 16);
+	'(': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
+		ctx.drawImage(sprites[8], 0, 0);
 	}
 };
 
@@ -74,7 +54,7 @@ Tile.prototype.draw = function (canvas, currentlySeen) {
 	if (!this.seen) {
 		return;
 	}
-	Tile.draw[this.type](canvas.ctx);
+	Tile.draw[this.type](canvas.ctx, canvas.sprites);
 	//TODO for walls cover unseen parts?
 	if (!currentlySeen) {
 		Tile.draw['.'](canvas.ctx);
