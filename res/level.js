@@ -129,6 +129,25 @@ Level.prototype.findFreeTile = function (player) {
 	}
 };
 
+Level.prototype.findFreeTileNear = function (x0, y0, player) {
+	var d = 0, x, y;
+	while (true) {
+		//make sure you only call this if there is a free tile
+		for (x = x0 - d; x <= x0 + d; x++) {
+			for (y = y0 - d; y <= y0 + d; y++) {
+				if (
+					this.isOpen(x, y) &&
+					!this.monsterAt(x, y) &&
+					!player.canSee(x, y)
+				) {
+					return [x, y];
+				}
+			}
+		}
+		d++;
+	}
+};
+
 Level.prototype.addMonster = function (monster, x, y) {
 	monster.place(x, y, this);
 	this.npc.push(monster);

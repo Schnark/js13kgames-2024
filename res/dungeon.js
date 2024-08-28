@@ -177,9 +177,9 @@ Dungeon.prototype.initMonsters = function (player) {
 		pos = level.findFreeTile(player); //TODO place him in a free arean
 		level.addMonster(new Monster('&2'), pos[0], pos[1]);
 
-		this.transferHenchmen(player, level);
+		this.transferHenchmen(pos[0], pos[1], player, level);
 		this.maxHenchmen = 2;
-		pos = level.findFreeTile(player); //TODO place him near Lord Balsekil
+		pos = level.findFreeTileNear(pos[0], pos[1], player);
 		level.addMonster(this.createHenchman(), pos[0], pos[1]);
 	}
 	data = this.levelData[this.currentLevel].monsters;
@@ -202,7 +202,7 @@ Dungeon.prototype.spawnMonster = function (player) {
 	}
 };
 
-Dungeon.prototype.transferHenchmen = function (player, level) {
+Dungeon.prototype.transferHenchmen = function (x, y, player, level) {
 	var i, henchman, pos, somethingDone = false;
 	if (this.henchmenTransferred) {
 		return;
@@ -212,12 +212,10 @@ Dungeon.prototype.transferHenchmen = function (player, level) {
 		if (henchman.health === 0) {
 			continue;
 		}
-		pos = level.findFreeTile(player); //TODO place them near Lord Balsekil
-		if (pos) {
-			henchman.level.removeMonster(henchman);
-			level.addMonster(henchman, pos[0], pos[1]);
-			somethingDone = true;
-		}
+		pos = level.findFreeTileNear(x, y, player);
+		henchman.level.removeMonster(henchman);
+		level.addMonster(henchman, pos[0], pos[1]);
+		somethingDone = true;
 	}
 	if (somethingDone) {
 		log('you sense that all of Lord Balsekil’s henchmen rushed to his help.', 'b');

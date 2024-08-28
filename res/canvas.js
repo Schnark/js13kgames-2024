@@ -6,12 +6,11 @@ Canvas =
 
 var SPRITE_COUNT = 18, ANIMATION_DURATION = 200;
 
-function Canvas (id) {
-	this.canvas = document.getElementById(id);
+function Canvas () {
+	this.canvas = document.getElementById('canvas');
 	this.ctx = this.canvas.getContext('2d', {alpha: false});
 	this.cover = document.getElementById('cover');
 	this.coverCtx = this.cover.getContext('2d');
-	this.f = 1.5;
 }
 
 Canvas.animations = [];
@@ -33,23 +32,55 @@ Canvas.prototype.loadSprites = function (callback) {
 			ctx.drawImage(img, i * 16, 0, 16, 16, 0, 0, 16, 16);
 			this.sprites.push(canvas);
 		}
+		this.prepareInv();
 		callback();
 	}.bind(this);
 	img.src = SPRITE_URL;
 };
 
+Canvas.prototype.prepareInv = function () {
+	var inv = document.getElementById('inv'), el;
+	el = this.sprites[7];
+	el.style.display = 'none';
+	el.title = 'horseshoe';
+	inv.appendChild(el);
+	el = this.sprites[8];
+	el.style.display = 'none';
+	el.title = 'flashlight';
+	inv.appendChild(el);
+	el = this.sprites[6];
+	el.style.display = 'none';
+	el.title = 'lucky charm';
+	inv.appendChild(el);
+	inv.appendChild(document.createElement('span'));
+	el = this.sprites[4];
+	el.style.display = 'none';
+	el.title = 'lucky mushroom';
+	el.className = 'mushroom';
+	inv.appendChild(el);
+	el = document.createElement('span');
+	el.className = 'mushroom';
+	inv.appendChild(el);
+};
+
 Canvas.prototype.setSize = function (w, h) {
-	if (this.canvas.width !== w * 16) {
-		this.canvas.width = w * 16;
-		this.canvas.style.width = (w * 16 * this.f) + 'px';
-		this.cover.width = w * 16;
-		this.cover.style.width = (w * 16 * this.f) + 'px';
+	var w0 = w * 16, h0 = h * 16,
+		f, w1, h1;
+	f = Math.min((window.innerWidth - 30) / w0, (window.innerHeight - 80) / h0);
+	w1 = (w0 * f) + 'px';
+	h1 = (h0 * f) + 'px';
+	if (this.canvas.width !== w0) {
+		this.canvas.width = w0;
+		this.canvas.height = h0;
+		this.cover.width = w0;
+		this.cover.height = h0;
 	}
-	if (this.canvas.height !== h * 16) {
-		this.canvas.height = h * 16;
-		this.canvas.style.height = (h * 16 * this.f) + 'px';
-		this.cover.height = h * 16;
-		this.cover.style.height = (h * 16 * this.f) + 'px';
+	if (this.f !== f) {
+		this.f = f;
+		this.canvas.style.width = w1;
+		this.canvas.style.height = h1;
+		this.cover.style.width = w1;
+		this.cover.style.height = h1;
 	}
 };
 

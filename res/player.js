@@ -42,16 +42,24 @@ Player.prototype.showLuck = function () {
 };
 
 Player.prototype.showInv = function () {
-	var inv;
-	inv = [
-		this.luckyCharms ? (this.luckyCharms + ' lucky charm(s)') : '',
-		this.luckyMushrooms ? ('<span class="mushroom">' + this.luckyMushrooms + ' lucky mushroom(s)</span>') : '',
-		this.hasLamp ? 'a flashlight' : '',
-		this.hasHorseshoe ? 'a horseshoe' : ''
-	].filter(function (entry) {
-		return entry;
-	}).join(', ');
-	document.getElementById('inv').innerHTML = inv ? ('You have: ' + inv) : '';
+	var inv = document.getElementById('inv').childNodes;
+	if (this.hasHorseshoe) {
+		inv[0].style.display = '';
+	}
+	if (this.hasLamp) {
+		inv[1].style.display = '';
+	}
+	if (this.luckyCharms) {
+		inv[2].style.display = '';
+		inv[3].textContent = '×' + this.luckyCharms;
+	}
+	if (this.luckyMushrooms) {
+		inv[4].style.display = '';
+		inv[5].textContent = '×' + this.luckyMushrooms;
+	} else {
+		inv[4].style.display = 'none';
+		inv[5].textContent = '';
+	}
 };
 
 Player.prototype.getHint = function () {

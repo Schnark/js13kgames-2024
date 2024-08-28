@@ -8,7 +8,7 @@ var queue = [], queueTimeout,
 	rangedTargets,
 	DELAY = 200,
 	player, gameOver = false,
-	canvas = new Canvas('canvas');
+	canvas = new Canvas();
 
 function getPrintableKey (code, shift) {
 	var c = String.fromCharCode(code).toLowerCase();
@@ -95,6 +95,7 @@ function onKey (e) {
 	}
 
 	switch (key) {
+	//TODO hjklyubn?
 	case '1':
 	case 'End':
 		addMove(-1, 1, e.shiftKey);
