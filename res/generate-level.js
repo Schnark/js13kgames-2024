@@ -57,8 +57,7 @@ function isAdjacentToAnyRoom (rooms, x, y) {
 	return false;
 }
 
-//TODO this should be in the format we actually want
-function roomsToMap (rooms, corridors, x0, y0) {
+function roomsToMap (rooms, corridors, x0, y0, centerExit) {
 	var x, y, i, row, level = [];
 
 	function add (roomOrCorridor, c) {
@@ -85,8 +84,42 @@ function roomsToMap (rooms, corridors, x0, y0) {
 	}
 	level[y0 + 1][x0 + 1] = '<';
 	i = rooms.length === 1 ? 0 : rand(1, rooms.length - 1);
-	x = rand(0, rooms[i].w - 1) + rooms[i].x;
-	y = rand(0, rooms[i].h - 1) + rooms[i].y;
+	if (centerExit) {
+		x = Math.floor(rooms[i].w / 2) + rooms[i].x;
+		y = Math.floor(rooms[i].h / 2) + rooms[i].y;
+	} else {
+		x = rand(0, rooms[i].w - 1) + rooms[i].x;
+		y = rand(0, rooms[i].h - 1) + rooms[i].y;
+	}
+	level[y + 1][x + 1] = '>';
+	return level.map(function (row) {
+		return row.join('');
+	}).join('\n');
+}
+
+function mazeToMap (open, x0, y0) {
+	var x, y, i, row, level = [], dx, dy;
+	dx = 1 + x0 % 2;
+	dy = 1 + y0 % 2;
+	for (y = 0; y < LEVEL_H_2 + 2; y++) {
+		row = [];
+		for (x = 0; x < LEVEL_W_2 + 2; x++) {
+			row.push('#');
+		}
+		level.push(row);
+	}
+	for (i = 0; i < open.length; i++) {
+		level[open[i][1] + dy][open[i][0] + dx] = '.';
+	}
+	level[y0 + 1][x0 + 1] = '<';
+	x = randEven(0, LEVEL_W_2 - 12) + x0 % 2;
+	if (Math.abs(x0 - x) <= 5) {
+		x += 10;
+	}
+	y = randEven(0, LEVEL_H_2 - 12) + y0 % 2;
+	if (Math.abs(y0 - y) <= 5) {
+		y += 10;
+	}
 	level[y + 1][x + 1] = '>';
 	return level.map(function (row) {
 		return row.join('');
@@ -209,7 +242,49 @@ function generateCorridors (rooms) {
 	return corridors;
 }
 
-function generateLevel (x, y) {
+//Randomized Kruskal's Algorithm
+//w, h must be odd
+function generateMaze (w, h) {
+	var x, y, wall = [], open = [], desctructible = [], sets = {}, i, d, c1, c2;
+	for (x = 0; x < w; x++) {
+		for (y = 0; y < h; y++) {
+			if (x % 2 === 0 && y % 2 === 0) {
+				open.push([x, y]);
+				sets[x + ',' + y] = open.length;
+			} else if (x % 2 === 0 || y % 2 === 0) {
+				desctructible.push([x, y]);
+			} else {
+				wall.push([x, y]);
+			}
+		}
+	}
+	while (desctructible.length) {
+		i = rand(0, desctructible.length - 1);
+		d = desctructible.splice(i, 1)[0];
+		if (d[0] % 2) {
+			c1 = (d[0] - 1) + ',' + d[1];
+			c2 = (d[0] + 1) + ',' + d[1];
+		} else {
+			c1 = d[0] + ',' + (d[1] - 1);
+			c2 = d[0] + ',' + (d[1] + 1);
+		}
+		c1 = sets[c1];
+		c2 = sets[c2];
+		if (c1 === c2) {
+			wall.push(d);
+		} else {
+			open.push(d);
+			Object.keys(sets).forEach(function (key) {
+				if (sets[key] === c2) {
+					sets[key] = c1;
+				}
+			});
+		}
+	}
+	return open;
+}
+
+function generateLevel (x, y, maze, centerExit) {
 	var rooms, corridors;
 	if (x === -1) {
 		x = rand(0, LEVEL_W_2 - 1);
@@ -218,19 +293,21 @@ function generateLevel (x, y) {
 		x--;
 		y--;
 	}
+	if (maze) {
+		maze = generateMaze(LEVEL_W_2 - 1 - LEVEL_W_2 % 2, LEVEL_H_2 - 1 - LEVEL_H_2 % 2);
+		return mazeToMap(maze, x, y);
+	}
 	rooms = generateRooms(x, y);
 	corridors = generateCorridors(rooms);
-	return roomsToMap(rooms, corridors, x, y);
+	return roomsToMap(rooms, corridors, x, y, centerExit);
 }
 
 /*
-TODO Mazes
-For a maze, create one big room with even x, y, and odd w, h
+TODO It would be nice to have levels with rooms and mazes together.
+To do so, create one big room with even x, y, and odd w, h
 Create rooms left and right of it, connect them independently.
 Then connect the big room to one room on the left, and one on the right.
-Constract a maze inside the big room by the Randomized Kruskal's Algorithm:
-Tiles with two even coords are open, tiles with one even and one odd coord are destructible walls, tiles with two odd coords are fixed walls.
-Take the destructible walls in random order and remove each one if and only if the two neighbours are not yet connected (keep track of that).
+Constract a maze inside the big room.
 */
 
 /*function test () {

@@ -1,5 +1,5 @@
 /*global Player: true*/
-/*global MonsterBase, log*/
+/*global MonsterBase, log, sound*/
 Player =
 (function () {
 "use strict";
@@ -70,13 +70,14 @@ Player.prototype.getHint = function () {
 	if (!this.hasLamp) {
 		return a + 'flashlight' + b;
 	}
-	if (this.missedEarlyLuckyCharms === 1) {
+	if (this.elc[0] === 1) {
 		return a + 'lucky charm' + b;
 	}
-	if (this.missedEarlyLuckyCharms) {
-		return a + this.missedEarlyLuckyCharms + ' lucky charms' + b;
+	if (this.elc[0]) {
+		return a + this.elc[0] + ' lucky charms' + b;
 	}
-	return 'Well done so far! Now find and defeat Lord Balsekil who has the third lucky charm.'; //TODO
+	return 'Well done so far! Now find the remaining lucky charms, ' +
+		'and find and defeat Lord Balsekil who has the seventh lucky charm.';
 };
 
 Player.prototype.getResult = function () {
@@ -141,14 +142,23 @@ Player.prototype.canSee = function (x, y) {
 };
 
 Player.prototype.handleItem = function (type) {
-	var msg, take = false;
-	//TODO add fortune cookies with general hints?
+	var msg, take = false,
+		cookies = [
+			'Never throw your horseshoe at a mirror monster!',
+			'Take care of crows, they are fast and can blind you for some time!',
+			'Try to get rid of as many of Lord Balsekil’s henchmen as possible before you finally meet him!',
+			'Avoid ladders up unless you really have to use them.',
+			'Balsekil is Volapük and means thirteen.',
+			'The highest possible score is 7777.',
+			'Thank you for playing!'
+	];
 	if (type === '>' && this.level.depth === 0) {
 		log('you found the ladder down to the second level.');
 	} else if (type === '<') {
 		if (Math.random() < 0.3) {
-			log('you accidentally walked below the ladder.');
+			log('you accidentally walked below the ladder.', 'b');
 			this.reduceHealth(2);
+			sound('hit');
 		}
 	} else if (type === '%') {
 		msg = 'you found a four-leave clover, ';
@@ -164,8 +174,8 @@ Player.prototype.handleItem = function (type) {
 		}
 		log(msg);
 	} else if (type === '*') {
-		if (this.level.depth < 2) {
-			this.missedEarlyLuckyCharms--;
+		if (this.level.depth < this.elc[1]) {
+			this.elc[0]--;
 		}
 		this.luckyCharms++;
 		take = true;
@@ -173,7 +183,11 @@ Player.prototype.handleItem = function (type) {
 	} else if (type === 'F') {
 		this.luckyMushrooms++;
 		take = true;
-		log('you found a lucky mushroom' + (this.luckyMushrooms === 1 ? ', which you can eat to make you very strong for a short time' : '') + '.', this.luckyMushrooms === 1 ? 'b' : '');
+		log(
+			'you found a lucky mushroom' +
+			(this.luckyMushrooms === 1 ? ', which you can eat to make you very strong for a short time' : '') + '.',
+			this.luckyMushrooms === 1 ? 'b' : ''
+		);
 	} else if (type === '(') {
 		take = true;
 		this.hasLamp = true;
@@ -186,9 +200,21 @@ Player.prototype.handleItem = function (type) {
 		this.hasHorseshoe = true;
 		this.minAttack = 2;
 		this.maxAttack = 4;
-		log('you found a horseshoe. From now on you will use it for attacks (it will return like a boomerang), and to defend attacks (but only if you did not just throw it).', 'b');
+		log(
+			'you found a horseshoe. From now on you will use it for attacks (it will return like a boomerang), ' +
+			'and to defend against attacks (but only if you did not just throw it).',
+			'b'
+		);
+	} else if (type === '?') {
+		take = true;
+		log(
+			'you found a fortune cookie. It tastes delicious and has a paper inside: ' +
+			cookies[Math.floor(Math.random() * cookies.length)],
+			'b'
+		);
 	}
 	if (take) {
+		sound('item');
 		this.showInv();
 	}
 	return take;
@@ -203,6 +229,7 @@ Player.prototype.eat = function () {
 	if (this.luckyMushroomTimeout === 0) {
 		this.experience *= 2;
 		log('you feel very strong!', 'b');
+		sound('strong');
 	}
 	this.luckyMushroomTimeout += Math.floor(4 + Math.random() * 5); //will be decreased immediately
 	return true;
@@ -223,6 +250,7 @@ Player.prototype.handleTimeouts = function () {
 		if (this.luckyMushroomTimeout === 0) {
 			this.experience /= 2;
 			log('you feel normal again.', 'b');
+			sound('weak');
 		}
 	}
 	if (this.blindTimeout > 0) {

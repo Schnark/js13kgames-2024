@@ -1,5 +1,5 @@
 /*global events: true*/
-/*global log, Canvas*/
+/*global log, sound, Canvas*/
 events =
 (function () {
 "use strict";
@@ -95,43 +95,59 @@ function onKey (e) {
 	}
 
 	switch (key) {
-	//TODO hjklyubn?
 	case '1':
 	case 'End':
+	case 'b':
+	case 'B':
 		addMove(-1, 1, e.shiftKey);
 		break;
 	case '2':
 	case 'ArrowDown':
+	case 'j':
+	case 'J':
 		addMove(0, 1, e.shiftKey);
 		break;
 	case '3':
 	case 'PageDown':
+	case 'n':
+	case 'N':
 		addMove(1, 1, e.shiftKey);
 		break;
 	case '4':
 	case 'ArrowLeft':
+	case 'h':
+	case 'H':
 		addMove(-1, 0, e.shiftKey);
 		break;
 	case '5':
 	case 'Clear':
+	case '.':
 	case 'w':
 	case 'W':
 		addWait(e.shiftKey);
 		break;
 	case '6':
 	case 'ArrowRight':
+	case 'l':
+	case 'L':
 		addMove(1, 0, e.shiftKey);
 		break;
 	case '7':
 	case 'Home':
+	case 'y':
+	case 'Y':
 		addMove(-1, -1, e.shiftKey);
 		break;
 	case '8':
 	case 'ArrowUp':
+	case 'k':
+	case 'K':
 		addMove(0, -1, e.shiftKey);
 		break;
 	case '9':
 	case 'PageUp':
+	case 'u':
+	case 'U':
 		addMove(1, -1, e.shiftKey);
 		break;
 	case '<':
@@ -148,6 +164,12 @@ function onKey (e) {
 		break;
 	case 'f':
 		queue.push(['attack']);
+		break;
+	case 'm':
+		queue.push(['sound']);
+		break;
+	case 'Q':
+		queue.push(['quit']);
 		break;
 	case 'x':
 		queue.push(['autoexplore']);
@@ -215,7 +237,7 @@ function init (p) {
 		canvas.canvas.addEventListener('click', onMouse);
 		document.getElementById('inv').addEventListener('click', onMouseInv);
 		player.level.draw(canvas, player);
-		log('welcome. Find all three lucky charms to win.', 'b');
+		log('welcome. Find all seven lucky charms to win.', 'b');
 	});
 }
 
@@ -227,12 +249,15 @@ function workQueue () {
 			return; //wait for input
 		}
 		action = queue.shift();
-		if (gameOver) { //TODO once we get an action "new game" allow that after gameOver
+		if (gameOver && !(action[0] === 'sound' || action[0] === 'quit')) {
 			return;
 		}
 		switch (action[0]) {
 		case 'move':
 			didSomething = player.moveRel(action[1], action[2]);
+			if (didSomething) {
+				sound('move');
+			}
 			break;
 		case 'goUp':
 			didSomething = player.goUp();
@@ -290,6 +315,12 @@ function workQueue () {
 				queue.push(['autoexplore']);
 			}
 			break;
+		case 'sound':
+			c = document.getElementById('sound');
+			c.checked = !c.checked;
+			break;
+		case 'quit':
+			location.reload();
 		}
 	}
 
@@ -321,15 +352,16 @@ function workQueue () {
 	if (monsterSeen) {
 		queue = [];
 	}
-	if (player.health === 0) {
-		queue = [];
-		gameOver = true;
-	}
-	if (player.luckyCharms === 3) {
+	if (player.luckyCharms === 7) {
 		log('you found all lucky charms and win the game.', 'b');
 		gameOver = true;
 	}
+	if (!gameOver && player.health === 0) {
+		log('you are out of luck and lose the game.', 'b');
+		gameOver = true;
+	}
 	if (gameOver) {
+		queue = [];
 		log(player.getResult());
 	}
 	if (queue.length > 0) {

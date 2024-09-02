@@ -4,7 +4,7 @@ Canvas =
 (function () {
 "use strict";
 
-var SPRITE_COUNT = 18, ANIMATION_DURATION = 200;
+var SPRITE_COUNT = 19, ANIMATION_DURATION = 200;
 
 function Canvas () {
 	this.canvas = document.getElementById('canvas');
@@ -66,7 +66,7 @@ Canvas.prototype.prepareInv = function () {
 Canvas.prototype.setSize = function (w, h) {
 	var w0 = w * 16, h0 = h * 16,
 		f, w1, h1;
-	f = Math.min((window.innerWidth - 30) / w0, (window.innerHeight - 80) / h0);
+	f = Math.max(1, Math.min((window.innerWidth - 20) / w0, (window.innerHeight - 80) / h0));
 	w1 = (w0 * f) + 'px';
 	h1 = (h0 * f) + 'px';
 	if (this.canvas.width !== w0) {

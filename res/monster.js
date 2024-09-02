@@ -84,19 +84,20 @@ Monster.data = {
 	'&1': {
 		desc: ['one of Balsekil’s henchmen', 'Henchman No. '],
 		aiMode: 'meleeRanged',
-		block: 0.15,
-		health: 15,
+		block: 0.125,
+		health: 20,
 		minAttack: 1,
-		maxAttack: 3
+		maxAttack: 3,
+		experience: 1.25
 	},
 	'&2': {
 		desc: ['Lord Balsekil', 'Lord Balsekil'],
 		aiMode: 'meleeRanged',
 		block: 0.2,
-		health: 25,
+		health: 30,
 		minAttack: 1,
 		maxAttack: 5,
-		experience: 1.5
+		experience: 1.75
 	},
 	//chimney sweep (gives hints)
 	'@2': {
@@ -147,14 +148,18 @@ Monster.prototype.meleeAI = function (player) {
 };
 
 Monster.prototype.rangedAI = function (player) {
-	if (!this.seen) {
+	if (
+		this.seen ||
+		//this might happen for fast monsters
+		Math.abs(player.x - this.x) <= 1 && Math.abs(player.y - this.y) <= 1
+	) {
+		this.attack(player, true);
+	} else {
 		if (Math.random() < 0.5) {
 			this.walkRandom(player);
 		} else {
 			this.huntPlayer(player);
 		}
-	} else {
-		this.attack(player, true);
 	}
 };
 
@@ -162,7 +167,7 @@ Monster.prototype.meleeRangedAI = function (player) {
 	var dx = player.x - this.x, dy = player.y - this.y;
 	if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
 		this.attack(player);
-	} else if (dx * dx + dy * dy <= 4) {
+	} else if (this.seen && dx * dx + dy * dy <= 4) {
 		this.attack(player, true);
 	} else if (!this.seen) {
 		this.rangedAI(player);

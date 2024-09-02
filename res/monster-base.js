@@ -1,5 +1,5 @@
 /*global MonsterBase: true*/
-/*global Canvas, log*/
+/*global Canvas, log, sound*/
 MonsterBase =
 (function () {
 "use strict";
@@ -9,7 +9,11 @@ function MonsterBase () {
 }
 
 MonsterBase.draw = {
-	'@': function (ctx, sprites) {
+	'@': function (ctx, sprites, strong) {
+		if (strong) {
+			ctx.fillStyle = '#fa8';
+			ctx.fillRect(3, 0, 9, 16);
+		}
 		ctx.drawImage(sprites[9], 0, 0);
 	},
 	'@2': function (ctx, sprites) {
@@ -88,7 +92,7 @@ MonsterBase.prototype.drawHealth = function (ctx, w, h) {
 };
 
 MonsterBase.prototype.draw = function (canvas) {
-	MonsterBase.draw[this.type](canvas.ctx, canvas.sprites);
+	MonsterBase.draw[this.type](canvas.ctx, canvas.sprites, this.luckyMushroomTimeout);
 	if (!this.isPlayer && this.health < this.maxHealth) {
 		canvas.ctx.translate(2, 2);
 		this.drawHealth(canvas.ctx, 12, 4);
@@ -142,7 +146,7 @@ MonsterBase.prototype.improveExperience = function (maxTargetHealth) {
 	if (this.luckyMushroomTimeout) {
 		this.experience /= 2;
 	}
-	newExperience = this.experience * Math.pow(2, maxTargetHealth / 500);
+	newExperience = this.experience * Math.pow(2, maxTargetHealth / 1000);
 	if (newExperience > 2) {
 		newExperience = 2;
 	}
@@ -190,6 +194,7 @@ MonsterBase.prototype.attack = function (target, ranged) {
 	}
 	if (ranged) {
 		Canvas.addAnimation(this.x, this.y, target.x, target.y, this.hasHorseshoe);
+		sound('ranged');
 	}
 	if (ranged && this.rangedFails(dist(target, this))) {
 		if (this.isPlayer) {
@@ -213,6 +218,7 @@ MonsterBase.prototype.attack = function (target, ranged) {
 		}
 		return;
 	}
+	sound('hit');
 	if (this.isPlayer) {
 		log(this.getAttackName(ranged) + target.getDesc(true) + '.');
 	} else {
@@ -238,9 +244,7 @@ MonsterBase.prototype.reduceHealth = function (damage) {
 };
 
 MonsterBase.prototype.die = function () {
-	if (this.isPlayer) {
-		log('you are out of luck and lose the game.', 'b');
-	} else {
+	if (!this.isPlayer) {
 		log(this.getDesc(true) + ' vanishes.', 'b');
 		if (this.type === '&2') {
 			this.level.takeItem(this.x, this.y, '*');

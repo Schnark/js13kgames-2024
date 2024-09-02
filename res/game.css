@@ -1,19 +1,48 @@
 html {
 	font-family: sans-serif;
+	color-scheme: light dark;
+}
+
+#start {
+	max-width: 50em;
+	padding: 0.5em;
+	margin: auto;
+	border: solid thin;
+}
+
+button {
+	padding: 1em 5em;
+	margin: 1.5em auto;
+	display: block;
+	cursor: pointer;
+	width: 20em;
+}
+
+label {
+	float: right;
+}
+
+#sound,
+#sound:checked ~ #off,
+#sound:not(:checked) ~ #on {
+	display: none;
 }
 
 #log {
 	overflow-y: scroll;
 	height: 4.5em;
 	line-height: 1.5em;
-	padding: 0;
+	padding: 0.2em;
+	margin: 0.2em 1.5em 0.2em 0;
+	border: solid thin;
 }
 
 #log li {
 	display: block;
 }
 
-.b {
+.b,
+#luck {
 	font-weight: bold;
 }
 
@@ -36,9 +65,16 @@ html {
 	image-rendering: pixelated;
 }
 
+label,
 #canvas,
 .mushroom {
 	cursor: pointer;
+}
+
+#ind {
+	padding: 0.2em;
+	margin: 0.2em 0;
+	border: solid thin;
 }
 
 #inv canvas {
@@ -48,6 +84,8 @@ html {
 }
 
 #luck-container,
+#level,
 #inv {
 	display: inline-block;
+	margin: 0 0 0 1em;
 }

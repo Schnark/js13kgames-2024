@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="res/game.css">
 <script>SPRITE_URL = 'res/sprites.png';</script>
 <script src="res/log.js" defer></script>
+<script src="res/sound.js" defer></script>
 <script src="res/generate-level.js" defer></script>
 <script src="res/canvas.js" defer></script>
 <script src="res/tile.js" defer></script>
@@ -24,22 +25,25 @@ insert min.css
 </style>
 delete line-->
 </head><body>
+<section id="start"><p>
+Lord Balsekil stole your seven purple lucky charms and hid them in his Lairs of Bad Luck. So fight him, his thirteen henchmen and your superstition to get them back! Good luck!
+</p>
+<p><button id="game-0">Short game</button></p>
+<p><button id="game-1">Normal game</button></p>
+</section>
+<section id="game" hidden>
+<label><input id="sound" type="checkbox" checked><span id="off">🔇</span><span id="on">🔊</span></label>
 <ol id="log" reversed></ol>
 <div id="wrap">
 <canvas id="canvas" moz-opaque></canvas>
 <canvas id="cover"></canvas>
 </div>
+<div id="ind">
 <p id="luck-container">Luck: <span id="luck"></span><br>
 <canvas id="luck-canvas" moz-opaque></canvas></p>
+<p id="level">Level 1</p>
 <p id="inv"></p>
-<section>
-<h2>Help</h2>
-<p>Use number pad to move (or arrow keys but without diagonal movement), hold shift to walk to next wall. Or click on a place to go to (if you have seen it before).</p>
-<p>To climb up and down ladders use &lt; and &gt;. Or just click on it.</p>
-<p>Press x to automatically explore the map.</p>
-<p>Press w to wait a turn, or W to wait until you see an enemy.</p>
-<p>To attack an enemy, press f for a ranged attack, or walk into it for a melee attack. Or just click on it.</p>
-<p>Press e to eat a mushroom, or click it in your inventory.</p>
+</div>
 </section>
 <!--delete line
 <script>

@@ -44,6 +44,10 @@ Tile.draw = {
 	'(': function (ctx, sprites) {
 		ctx.drawImage(sprites[0], 0, 0);
 		ctx.drawImage(sprites[8], 0, 0);
+	},
+	'?': function (ctx, sprites) {
+		ctx.drawImage(sprites[0], 0, 0);
+		ctx.drawImage(sprites[18], 0, 0);
 	}
 };
 
