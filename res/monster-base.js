@@ -146,7 +146,7 @@ MonsterBase.prototype.improveExperience = function (maxTargetHealth) {
 	if (this.luckyMushroomTimeout) {
 		this.experience /= 2;
 	}
-	newExperience = this.experience * Math.pow(2, maxTargetHealth / 1000);
+	newExperience = this.experience * Math.pow(2, maxTargetHealth / 1200);
 	if (newExperience > 2) {
 		newExperience = 2;
 	}

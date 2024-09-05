@@ -1,6 +1,12 @@
 html {
 	font-family: sans-serif;
 	color-scheme: light dark;
+	/*This should be the default, but apparently it isn't:
+	With light color scheme in an iframe the background is
+	transparent instead of white. Text color seems ok in
+	every case, but just to be sure.*/
+	background: canvas;
+	color: canvastext;
 }
 
 #start {

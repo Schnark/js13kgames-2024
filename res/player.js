@@ -145,7 +145,7 @@ Player.prototype.handleItem = function (type) {
 	var msg, take = false,
 		cookies = [
 			'Never throw your horseshoe at a mirror monster!',
-			'Take care of crows, they are fast and can blind you for some time!',
+			'Beware of crows, they are fast and can blind you for some time!',
 			'Try to get rid of as many of Lord Balsekil’s henchmen as possible before you finally meet him!',
 			'Avoid ladders up unless you really have to use them.',
 			'Balsekil is Volapük and means thirteen.',

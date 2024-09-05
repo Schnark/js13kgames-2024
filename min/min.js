@@ -1,32 +1,3 @@
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8">
-<title>Lord Balsekil’s Lairs of Bad Luck</title>
-<meta name="viewport" content="width=device-width">
-<style>
-html{font-family:sans-serif;color-scheme:light dark;background:canvas;color:canvastext}#start{max-width:50em;padding:0.5em;margin:auto;border:solid thin}button{padding:1em 5em;margin:1.5em auto;display:block;cursor:pointer;width:20em}label{float:right}#sound,#sound:checked~#off,#sound:not(:checked)~#on{display:none}#log{overflow-y:scroll;height:4.5em;line-height:1.5em;padding:0.2em;margin:0.2em 1.5em 0.2em 0;border:solid thin}#log li{display:block}.b,#luck{font-weight:bold}#wrap{position:relative}#cover{position:absolute;top:0;left:0;pointer-events:none}#canvas,#inv canvas{image-rendering:-moz-crisp-edges;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;image-rendering:pixelated}label,#canvas,.mushroom{cursor:pointer}#ind{padding:0.2em;margin:0.2em 0;border:solid thin}#inv canvas{width:32px;height:32px;margin-left:0.5em}#luck-container,#level,#inv{display:inline-block;margin:0 0 0 1em}</style>
-</head><body>
-<section id="start"><p>
-Lord Balsekil stole your seven purple lucky charms and hid them in his Lairs of Bad Luck. So fight him, his thirteen henchmen and your superstition to get them back! Good luck!
-</p>
-<p><button id="game-0">Short game</button></p>
-<p><button id="game-1">Normal game</button></p>
-</section>
-<section id="game" hidden>
-<label><input id="sound" type="checkbox" checked><span id="off">🔇</span><span id="on">🔊</span></label>
-<ol id="log" reversed></ol>
-<div id="wrap">
-<canvas id="canvas" moz-opaque></canvas>
-<canvas id="cover"></canvas>
-</div>
-<div id="ind">
-<p id="luck-container">Luck: <span id="luck"></span><br>
-<canvas id="luck-canvas" moz-opaque></canvas></p>
-<p id="level">Level 1</p>
-<p id="inv"></p>
-</div>
-</section>
-<script>
 (function(){var j,q,y,w,z,A,B,x,u,C,D;j=function(){function c(c,d){var g;f?a.push([c,d]):(g=document.createElement("li"),g.textContent=c.charAt(0).toUpperCase()+c.slice(1),g.className=d||"",b.insertBefore(g,b.firstChild),b.scrollTop=0)}var b=document.getElementById("log"),a=[],f=!1;c.async=function(a){f=a};c.clearQueue=function(){a.forEach(function(a){c(a[0],a[1])});a=[]};return c}();q=function(){function c(a,c,g,e,l,t){var s,i,r;f||(f=new b);s=f.currentTime+0.01;g=s+g*e/1E3;i=f.createOscillator();
 r=f.createGain();i.type=["square","sawtooth","triangle","sine"][t||0];r.gain.value=0;i.connect(r);r.connect(f.destination);i.start();i.frequency.setValueAtTime(a,s);i.frequency.linearRampToValueAtTime(a+c*e,g);r.gain.setValueAtTime(l,s);r.gain.linearRampToValueAtTime(0,g);i.stop(g+0.01)}var b=window.AudioContext||window.webkitAudioContext,a=document.getElementById("sound"),f;return function(f){if(b&&a.checked)switch(f){case "move":c(100,-10,15,15,0.7,2);break;case "item":c(510,0,15,20,0.1);setTimeout(function(){c(2600,
 1,10,50,0.2)},80);break;case "ranged":c(160,10,15,10,0.1);c(250,-20,30,10,0.1,1);c(1500,-150,30,10,0.1,1);break;case "hit":c(100,-10,10,25,0.5);c(125,-5,20,45,0.1,1);c(40,2,20,20,1,2);c(200,-4,10,100,0.25,2);break;case "strong":c(220,15,20,15,0.3,2);break;case "weak":c(440,-15,20,15,0.3,2)}}}();y=function(){function c(a,b){a=Math.ceil(a);b=Math.floor(b);return Math.floor(a+Math.random()*(b+1-a))}function b(a,b,f,h,e){function o(a,b){var f,c;for(f=0;f<a.w;f++)for(c=0;c<a.h;c++)k[c+a.y+1][f+a.x+1]=
@@ -91,5 +62,3 @@ h+").")}else k=i.level.visibleMonsters[0];if(k){i.attack(k,!0);if(i.hasHorseshoe
 i.level.npc[f],k.speed)for(k.movesLeft=(k.movesLeft||0)+1;k.movesLeft>=k.speed;)k.monsterAI(i),k.movesLeft-=k.speed;else k.monsterAI(i);i.handleTimeouts();i.usesHorseshoe=!1;j.async(!1);d=i.level.draw(p,i);p.runAnimations();j.clearQueue();d&&(e=[]);i.luckyCharms===7&&(j("you found all lucky charms and win the game.","b"),r=!0);!r&&i.health===0&&(j("you are out of luck and lose the game.","b"),r=!0);r&&(e=[],j(i.getResult()));e.length>0&&(l=setTimeout(g,s))}var e=[],l,t,s=200,i,r=!1,p=new w;return{init:function(a){p.loadSprites(function(){i=
 a;document.addEventListener("keydown",f);p.canvas.addEventListener("click",h);document.getElementById("inv").addEventListener("click",d);i.level.draw(p,i);j("welcome. Find all seven lucky charms to win.","b")})}}}();(function(){function c(c){c=new B(c);c=new C(c);b.hidden=!0;a.hidden=!1;D.init(c)}var b=document.getElementById("start"),a=document.getElementById("game");document.getElementById("game-0").addEventListener("click",function(){c(0)});document.getElementById("game-1").addEventListener("click",
 function(){c(1)})})()})();
-</script>
-</body></html>

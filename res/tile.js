@@ -60,6 +60,8 @@ Tile.prototype.draw = function (canvas, currentlySeen) {
 	}
 	Tile.draw[this.type](canvas.ctx, canvas.sprites);
 	//TODO for walls cover unseen parts?
+	//i.e. cover each corner in black if all three neighbors are walls or never seen
+	//and in gray if all three neighbors are currently not seen
 	if (!currentlySeen) {
 		Tile.draw['.'](canvas.ctx);
 	}

@@ -59,10 +59,10 @@ function playSound (type) {
 		generateSound(200, -4, 10, 100, 0.25, 2);
 		break;
 	case 'strong':
-		generateSound(220, 15, 60, 15, 0.3, 2);
+		generateSound(220, 15, 20, 15, 0.3, 2);
 		break;
 	case 'weak':
-		generateSound(440, -15, 60, 15, 0.3, 2);
+		generateSound(440, -15, 20, 15, 0.3, 2);
 	}
 }
 

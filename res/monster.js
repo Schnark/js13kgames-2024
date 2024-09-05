@@ -16,7 +16,10 @@ function Monster (type) {
 
 Monster.prototype = new MonsterBase();
 
-//TODO balance values (also elsewhere)
+//TODO balance values (also elsewhere, i.e. item and moster probs in dungeon.js,
+//basic attack values in monster.js, and timeouts in player.js)
+//Since I (knowing all spoilers) win often (once with the highest possible score)
+//but sometimes lose, the values seem to be quite good by now.
 Monster.data = {
 	//newts (slow, melee only)
 	':1': {
