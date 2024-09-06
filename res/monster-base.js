@@ -223,7 +223,7 @@ MonsterBase.prototype.attack = function (target, ranged) {
 		log(this.getAttackName(ranged) + target.getDesc(true) + '.');
 	} else {
 		log(this.getAttackName(ranged) + 'you.');
-		if (this.type.charAt(0) === 'B' && Math.random() < 0.2) {
+		if (this.type.charAt(0) === 'B' && Math.random() < 0.3) {
 			log(this.getDesc(true) + ' hits your eyes.');
 			target.makeBlind();
 		}

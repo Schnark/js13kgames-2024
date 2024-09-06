@@ -241,7 +241,7 @@ Player.prototype.makeBlind = function () {
 		this.sightRadius = 1.5;
 		log('you can hardly see!');
 	}
-	this.blindTimeout += Math.floor(6 + Math.random() * 8);
+	this.blindTimeout += Math.floor(10 + Math.random() * 12);
 };
 
 Player.prototype.handleTimeouts = function () {

@@ -1456,7 +1456,7 @@ MonsterBase.prototype.attack = function (target, ranged) {
 		log(this.getAttackName(ranged) + target.getDesc(true) + '.');
 	} else {
 		log(this.getAttackName(ranged) + 'you.');
-		if (this.type.charAt(0) === 'B' && Math.random() < 0.2) {
+		if (this.type.charAt(0) === 'B' && Math.random() < 0.3) {
 			log(this.getDesc(true) + ' hits your eyes.');
 			target.makeBlind();
 		}
@@ -1952,7 +1952,7 @@ Player.prototype.makeBlind = function () {
 		this.sightRadius = 1.5;
 		log('you can hardly see!');
 	}
-	this.blindTimeout += Math.floor(6 + Math.random() * 8);
+	this.blindTimeout += Math.floor(10 + Math.random() * 12);
 };
 
 Player.prototype.handleTimeouts = function () {
